@@ -11,7 +11,7 @@ _DEMO_BOXES = {
     "blue cap": {"x": 205, "y": 255, "w": 34, "h": 24, "label": "blue cap"},
     "gloved hand": {"x": 300, "y": 150, "w": 92, "h": 64, "label": "gloved hand"},
     "hand": {"x": 300, "y": 150, "w": 92, "h": 64, "label": "hand"},
-    "sterile field": {"x": 70, "y": 90, "w": 360, "h": 240, "label": "sterile field"},
+    "sterile field": {"x": 70, "y": 90, "w": 430, "h": 230, "label": "sterile field"},
 }
 
 

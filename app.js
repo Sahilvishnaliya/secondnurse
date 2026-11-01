@@ -44,7 +44,7 @@ fetch("/api/health").then(r => r.json()).then(h => {
 }).catch(() => { $("#mode-pill").textContent = "Meta API: offline fallback"; });
 
 /* ================= SIMULATOR ================= */
-const FIELD = { x: 70, y: 90, w: 360, h: 230 };
+const FIELD = { x: 70, y: 90, w: 430, h: 230 };
 const TIP = { x: 452, y: 196, w: 30, h: 36 };
 const state = {
   playing: false, raf: 0, startStamp: 0, elapsedBefore: 0,

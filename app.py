@@ -35,7 +35,7 @@ def security_headers(resp):
     resp.headers["Permissions-Policy"] = "camera=(self), microphone=()"
     resp.headers["Content-Security-Policy"] = (
         "default-src 'self'; img-src 'self' data:; media-src 'self' blob:; "
-        "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
+        "style-src 'self' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src https://fonts.gstatic.com; "
         "script-src 'self'; connect-src 'self'"
     )
     return resp
