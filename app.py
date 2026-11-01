@@ -102,6 +102,21 @@ def segment_route():
     return jsonify(segment(body["prompt"]))
 
 
+@app.route("/api/index.py", methods=["GET", "POST"])
+def vercel_dispatch():
+    """Vercel serves this Flask instance at /api/index.py; route by sn_path."""
+    target = (request.args.get("sn_path") or "").strip("/")
+    if target == "health" and request.method == "GET":
+        return health()
+    if target == "compile" and request.method == "POST":
+        return compile_route()
+    if target == "evaluate" and request.method == "POST":
+        return evaluate_route()
+    if target == "segment" and request.method == "POST":
+        return segment_route()
+    return jsonify({"error": "Not found."}), 404
+
+
 @app.errorhandler(413)
 def too_large(_):
     return jsonify({"error": "Request too large."}), 413
