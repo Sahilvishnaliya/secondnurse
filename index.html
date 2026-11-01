@@ -75,9 +75,16 @@
       </div>
 
       <div class="stage-wrap">
-        <div class="video-wrap">
+        <div class="video-wrap" id="video-wrap">
           <video id="camera" autoplay playsinline muted></video>
           <div id="cam-overlay" aria-hidden="true"></div>
+          <div class="cam-tools">
+            <div class="cam-switch" role="group" aria-label="Camera choice">
+              <button class="cam-opt is-active" id="btn-cam-rear" type="button">Overhead / Rear</button>
+              <button class="cam-opt" id="btn-cam-front" type="button">Front camera</button>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="btn-fullscreen" type="button">⛶ Full screen</button>
+          </div>
           <div class="cam-empty" id="cam-empty">
             <svg class="ic"><use href="#i-camera"/></svg>
             <p>Point this camera at the bench from above.<br>The kit in frame: hands, red connector, blue cap, sterile mat.</p>
@@ -104,6 +111,28 @@
         <button class="btn btn-ghost" id="btn-reset">Reset session</button>
         <label class="voice-toggle"><input type="checkbox" id="voice-toggle"> Voice alert</label>
       </div>
+
+      <details class="train-panel" id="train-panel">
+        <summary>Train SecondNurse on your bench — model calibration</summary>
+        <div class="train-body">
+          <p>Muse Wonder and SAM 3.1 are foundation models — they are not fine-tuned here. Instead, SecondNurse <strong>calibrates</strong> to your bench: lay the full kit in frame, run calibration, and the system tests multiple SAM phrasings per object on your actual lighting and camera, keeps the strongest prompt per object (by detection + confidence + mask sanity), and uses those prompts for live watch.</p>
+          <ol>
+            <li>Enable the camera and place hand/gloves, red connector, blue cap, and sterile mat in frame.</li>
+            <li>Run calibration. Four objects × several phrasings — expect under a minute.</li>
+            <li>Review the chosen prompt per object. Re-run any time the bench, kit, or lighting changes.</li>
+          </ol>
+          <div class="train-actions">
+            <button class="btn btn-dark" id="btn-calibrate" type="button">Run calibration</button>
+            <button class="btn btn-ghost" id="btn-calib-reset" type="button">Use default prompts</button>
+            <label class="train-threshold">Breach threshold
+              <input type="range" id="threshold-range" min="10" max="300" step="10" value="40">
+              <span class="mono" id="threshold-val">40px²</span>
+            </label>
+          </div>
+          <p class="mono" id="calib-status" role="status">Not calibrated yet — default prompts in use.</p>
+          <div id="calib-results"></div>
+        </div>
+      </details>
 
       <p class="plate-caption mono">Plate № 01 · Overhead bench — live camera, SAM 3.1 mask geometry, deterministic rules</p>
 

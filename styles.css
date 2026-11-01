@@ -284,6 +284,29 @@ body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opa
 .lede em,.manifesto-text em{font-family:var(--font-serif)}
 @media (max-width:640px){.stamp{width:84px;height:84px;top:-34px;right:-8px}.issue-line span:nth-child(1){display:none}}
 
+/* ===== v5: big camera, front camera, calibration ===== */
+.hero{grid-template-columns:minmax(320px,4fr) minmax(0,8fr)}
+.stage-wrap video{aspect-ratio:4/3;max-height:600px}
+#camera.mirrored{transform:scaleX(-1)}
+.video-wrap:fullscreen{background:#000}
+.video-wrap:fullscreen video{height:100%;max-height:none}
+.cam-tools{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:10px;z-index:4;line-height:1.2}
+.cam-switch{display:flex;background:rgba(20,17,11,.82);border:1px solid rgba(251,248,241,.25);border-radius:99px;padding:3px}
+.cam-opt{border:0;background:transparent;color:#CFC6B4;padding:8px 13px;border-radius:99px;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;min-height:38px}
+.cam-opt.is-active{background:#FBF8F1;color:var(--ink)}
+.cam-tools .btn{background:rgba(251,248,241,.94)}
+.train-panel{border:1.5px solid var(--ink);border-radius:14px;margin-top:14px;background:var(--paper-2);box-shadow:5px 5px 0 rgba(23,19,12,.85)}
+.train-panel summary{cursor:pointer;font-weight:700;padding:13px 16px;min-height:48px}
+.train-body{padding:2px 16px 16px}
+.train-body p{color:var(--ink-2)}
+.train-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+.train-threshold{display:flex;gap:9px;align-items:center;margin-left:auto;font-size:.88rem;font-weight:600}
+.train-threshold input{accent-color:var(--teal);width:130px}
+#calib-results table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:10px}
+#calib-results th,#calib-results td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left}
+#calib-results th{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:640px){.cam-tools{flex-direction:column;align-items:flex-start}.train-threshold{margin-left:0}}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
   html{scroll-behavior:auto}

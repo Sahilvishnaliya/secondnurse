@@ -115,7 +115,7 @@ def call_sam(image_url, prompt, timeout=60):
             {"type": "input_text", "text": prompt},
             {"type": "input_image", "image_url": image_url},
         ]}],
-        "metadata": {"mask_encoding": "one_bit"},
+        "metadata": {"mask_encoding": "one_bit", "include_confidence": "true"},
     }).encode()
     req = urllib.request.Request(API_URL, data=body, method="POST", headers={
         "Authorization": f"Bearer {key}", "Content-Type": "application/json"})
@@ -126,7 +126,7 @@ def call_sam(image_url, prompt, timeout=60):
 
 _CANONICAL = [
     ("sterile_tip", ("connector", "tip")),
-    ("hand", ("hand",)),
+    ("hand", ("hand", "glove")),
     ("cap", ("cap",)),
     ("field", ("field", "mat", "drape")),
 ]

@@ -113,15 +113,39 @@ $("#alert-reset").addEventListener("click", resetSession);
 /* ============ camera + live SAM ============ */
 const LIVE_PROMPTS = ["gloved hand", "red connector", "blue cap", "sterile field mat"];
 let stream = null, watchTimer = null, watchInFlight = false, touchStreak = 0;
+let facing = "environment";
+let overlapThreshold = Number(localStorage.getItem("sn-threshold") || 40);
+let activePrompts = JSON.parse(localStorage.getItem("sn-prompts") || "null") || [...LIVE_PROMPTS];
 
-$("#btn-camera").addEventListener("click", async () => {
+async function startCamera() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-    $("#camera").srcObject = stream;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    const video = $("#camera");
+    video.srcObject = stream;
+    video.classList.toggle("mirrored", facing === "user");
     $("#cam-empty").hidden = true;
-    $("#camera-status").textContent = "Camera live. Analyze a frame or start live watch.";
-    logEvent("camera", "Camera enabled.");
+    $("#camera-status").textContent = facing === "user"
+      ? "Front camera live (mirrored preview). Analyze a frame or start live watch."
+      : "Overhead/rear camera live. Analyze a frame or start live watch.";
+    logEvent("camera", `Camera enabled (${facing === "user" ? "front" : "overhead/rear"}).`);
   } catch { $("#camera-status").textContent = "Camera permission unavailable in this browser or device."; }
+}
+$("#btn-camera").addEventListener("click", startCamera);
+
+function setFacing(next) {
+  facing = next;
+  $("#btn-cam-front").classList.toggle("is-active", next === "user");
+  $("#btn-cam-rear").classList.toggle("is-active", next !== "user");
+  if (stream) startCamera();
+}
+$("#btn-cam-front").addEventListener("click", () => setFacing("user"));
+$("#btn-cam-rear").addEventListener("click", () => setFacing("environment"));
+$("#btn-fullscreen").addEventListener("click", () => {
+  const wrap = $("#video-wrap");
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (wrap.requestFullscreen) wrap.requestFullscreen();
 });
 
 function captureFrame() {
@@ -131,7 +155,9 @@ function captureFrame() {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(video.videoWidth * scale);
   canvas.height = Math.round(video.videoHeight * scale);
-  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  const ctx = canvas.getContext("2d");
+  if (facing === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", 0.72);
 }
 function boxOverlapPx(a, b) {
@@ -188,14 +214,14 @@ function checkLiveBreach(data) {
   if (data.touch && typeof data.touch.overlap_px === "number") overlapPx = data.touch.overlap_px;
   else if (by.hand && by.sterile_tip) overlapPx = boxOverlapPx(by.hand, by.sterile_tip);
   $("#ro-overlap").textContent = `${Math.round(overlapPx)} px²`;
-  $("#ro-overlap").classList.toggle("bad", overlapPx >= 40);
+  $("#ro-overlap").classList.toggle("bad", overlapPx >= overlapThreshold);
   $("#ro-latency").textContent = `${data.latency_ms} ms`;
   if (by.cap && by.field) {
     const capIn = inside(centroid(by.cap), by.field);
     $("#ro-field").textContent = capIn ? "yes" : "NO";
     $("#ro-field").classList.toggle("bad", !capIn);
   } else $("#ro-field").textContent = "—";
-  if (overlapPx >= 40) {
+  if (overlapPx >= overlapThreshold) {
     touchStreak += 1;
     $("#ro-dwell").textContent = String(touchStreak);
     if (touchStreak >= 2) {
@@ -213,7 +239,7 @@ async function analyzeFrame() {
   out.textContent = "Analyzing frame with SAM 3.1…";
   try {
     const r = await fetch("/api/segment-live", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image, prompts: LIVE_PROMPTS }) });
+      body: JSON.stringify({ image, prompts: activePrompts }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "Segmentation failed.");
     renderCamBoxes(d);
@@ -238,6 +264,94 @@ $("#btn-watch").addEventListener("click", () => {
   const tick = async () => { if (!watchInFlight) { watchInFlight = true; await analyzeFrame(); watchInFlight = false; } };
   tick();
   watchTimer = setInterval(tick, 3000);
+});
+
+/* ============ model calibration (training on your bench) ============ */
+const PROMPT_VARIANTS = {
+  hand: ["gloved hand", "hand", "blue glove", "purple glove", "nitrile glove"],
+  sterile_tip: ["red connector", "connector tip", "red tube connector", "red plug"],
+  cap: ["blue cap", "cap", "blue bottle cap", "small blue cap"],
+  field: ["sterile field mat", "green mat", "bench mat", "mat"],
+};
+const CANON_LABEL = { hand: "Hand / glove", sterile_tip: "Sterile connector tip", cap: "Cap", field: "Sterile field" };
+
+const range = $("#threshold-range"), tval = $("#threshold-val");
+range.value = overlapThreshold; tval.textContent = `${overlapThreshold}px²`;
+range.addEventListener("input", () => {
+  overlapThreshold = Number(range.value);
+  tval.textContent = `${overlapThreshold}px²`;
+  localStorage.setItem("sn-threshold", String(overlapThreshold));
+});
+if (localStorage.getItem("sn-prompts")) {
+  $("#calib-status").textContent = `Calibrated prompts active: ${activePrompts.join(" · ")}`;
+}
+
+function scoreCandidate(result) {
+  const b = (result.boxes || [])[0];
+  if (!b) return { found: false, score: -1, box: null };
+  const fw = result.frame_w || 640, fh = result.frame_h || 400;
+  const areaRatio = (b.w * b.h) / Math.max(1, fw * fh);
+  const sanity = areaRatio > 0.65 ? -0.6 : 0; // a "hand" covering the whole frame is a bad match
+  return { found: true, box: b, score: (b.confidence ?? 0.5) + sanity + Math.min(0.2, areaRatio) };
+}
+
+$("#btn-calibrate").addEventListener("click", async () => {
+  const status = $("#calib-status");
+  const image = captureFrame();
+  if (!image) { status.textContent = "Enable the camera first, with the full kit in frame."; return; }
+  status.textContent = "Calibrating: testing SAM phrasings on your frame…";
+  const chosen = {};
+  const rows = [];
+  try {
+    for (const [canon, variants] of Object.entries(PROMPT_VARIANTS)) {
+      const r = await fetch("/api/segment-live", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image, prompts: variants }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Calibration failed.");
+      let best = null;
+      (d.results || []).forEach((res, i) => {
+        const s = scoreCandidate(res);
+        rows.push({ canon, prompt: variants[i], ...s });
+        if (s.found && (!best || s.score > best.score)) best = { prompt: variants[i], score: s.score, confidence: s.box.confidence };
+      });
+      if (best) chosen[canon] = best.prompt;
+      status.textContent = `Calibrating… ${canon} done (${best ? `best: “${best.prompt}”` : "not found"}).`;
+    }
+  } catch (e) { status.textContent = e.message; return; }
+
+  const order = ["hand", "sterile_tip", "cap", "field"];
+  const next = order.map(k => chosen[k]).filter(Boolean);
+  if (next.length >= 2) {
+    activePrompts = next;
+    localStorage.setItem("sn-prompts", JSON.stringify(activePrompts));
+  }
+  const wrap = $("#calib-results"); wrap.textContent = "";
+  const table = document.createElement("table");
+  const head = document.createElement("tr");
+  ["Object", "Tested prompt", "Found", "Confidence", "Chosen"].forEach(t => {
+    const th = document.createElement("th"); th.textContent = t; head.append(th);
+  });
+  table.append(head);
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    [CANON_LABEL[row.canon], `“${row.prompt}”`, row.found ? "yes" : "no",
+     row.found && row.box.confidence != null ? row.box.confidence.toFixed(2) : "—",
+     chosen[row.canon] === row.prompt ? "✓ in use" : "",
+    ].forEach(c => { const td = document.createElement("td"); td.textContent = c; tr.append(td); });
+    table.append(tr);
+  }
+  wrap.append(table);
+  const missing = order.filter(k => !chosen[k]).map(k => CANON_LABEL[k]);
+  status.textContent = next.length >= 2
+    ? `Calibration saved. Live watch now uses: ${activePrompts.join(" · ")}${missing.length ? ` · Not found: ${missing.join(", ")} — reposition and re-run for those.` : ""}`
+    : "Calibration found too little — improve light/framing and re-run. Default prompts kept.";
+  logEvent("calibrate", `Calibration finished: ${activePrompts.join(" · ")}`);
+});
+
+$("#btn-calib-reset").addEventListener("click", () => {
+  activePrompts = [...LIVE_PROMPTS];
+  localStorage.removeItem("sn-prompts");
+  $("#calib-status").textContent = `Default prompts restored: ${activePrompts.join(" · ")}`;
 });
 
 /* ============ protocol compiler (Muse Wonder) ============ */
