@@ -8,10 +8,11 @@ from flask import Flask, jsonify, request, send_from_directory
 from core.meta_client import LIVE, segment
 from core.protocol import compile_protocol
 from core.rules import evaluate_trace
+from core.sam_live import segment_live
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 128 * 1024  # 128 KB hard request cap
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # room for one camera frame
 
 _hits = defaultdict(deque)
 
@@ -102,6 +103,24 @@ def segment_route():
     return jsonify(segment(body["prompt"]))
 
 
+@app.post("/api/segment-live")
+def segment_live_route():
+    if _rate_limited((request.remote_addr or "local") + ":live", limit=20, window=60):
+        return jsonify({"error": "Rate limit reached. Try again shortly."}), 429
+    body = _json_body()
+    if body is None:
+        return jsonify({"error": "JSON body required."}), 400
+    prompts = body.get("prompts", ["red connector"])
+    if not isinstance(prompts, list) or not all(isinstance(p, str) for p in prompts):
+        return jsonify({"error": "prompts must be a list of strings."}), 400
+    try:
+        return jsonify(segment_live(body.get("image", ""), prompts))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception:
+        return jsonify({"error": "Live segmentation failed. Check MODEL_API_KEY / SECONDNURSE_MODE."}), 502
+
+
 @app.route("/api/index.py", methods=["GET", "POST"])
 def vercel_dispatch():
     """Vercel serves this Flask instance at /api/index.py; route by sn_path."""
@@ -114,6 +133,8 @@ def vercel_dispatch():
         return evaluate_route()
     if target == "segment" and request.method == "POST":
         return segment_route()
+    if target == "segment-live" and request.method == "POST":
+        return segment_live_route()
     return jsonify({"error": "Not found."}), 404
 
 

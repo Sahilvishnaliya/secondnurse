@@ -292,17 +292,98 @@ $("#tab-camera").addEventListener("click", async () => {
 $("#tab-bench").addEventListener("click", () => {
   $("#tab-bench").classList.add("is-active"); $("#tab-camera").classList.remove("is-active");
   $("#stage").hidden = false; $("#camera").hidden = true; $("#camera-note").hidden = true;
+  if (watchTimer) { clearInterval(watchTimer); watchTimer = null; $("#btn-watch").textContent = "Start live watch"; }
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
 });
-$("#btn-analyze").addEventListener("click", async () => {
+/* ---- live camera analysis: real frames -> SAM (or demo geometry) -> rules ---- */
+const LIVE_PROMPTS = ["gloved hand", "red connector", "blue cap", "sterile field mat"];
+let watchTimer = null, watchInFlight = false, touchStreak = 0;
+
+function captureFrame() {
+  const video = $("#camera");
+  if (!video.videoWidth) return null;
+  const scale = Math.min(1, 640 / video.videoWidth);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(video.videoWidth * scale);
+  canvas.height = Math.round(video.videoHeight * scale);
+  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.72);
+}
+
+function boxOverlapPx(a, b) {
+  const x = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+  const y = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+  return x * y;
+}
+
+function renderCamBoxes(data) {
+  const overlay = $("#cam-overlay");
+  overlay.textContent = "";
+  for (const r of data.results || []) {
+    const fw = r.frame_w || 640, fh = r.frame_h || 400;
+    for (const b of r.boxes || []) {
+      const el = document.createElement("div");
+      el.className = `cam-box ${r.canonical || ""}`;
+      el.style.left = `${(b.x / fw) * 100}%`; el.style.top = `${(b.y / fh) * 100}%`;
+      el.style.width = `${(b.w / fw) * 100}%`; el.style.height = `${(b.h / fh) * 100}%`;
+      const tag = document.createElement("span"); tag.textContent = b.label || r.prompt;
+      el.append(tag); overlay.append(el);
+    }
+  }
+}
+
+function checkLiveBreach(data) {
+  const by = {};
+  for (const r of data.results || []) if (r.boxes && r.boxes[0]) by[r.canonical] = r.boxes[0];
+  let overlapPx = 0;
+  if (data.touch && typeof data.touch.overlap_px === "number") overlapPx = data.touch.overlap_px;
+  else if (by.hand && by.sterile_tip) overlapPx = boxOverlapPx(by.hand, by.sterile_tip);
+  if (overlapPx >= 40) {
+    touchStreak += 1;
+    if (touchStreak >= 2) {
+      fireBreach("TOUCH", "Stop — sterile tip touched.", "Replace the cap. Do not connect it.");
+      logEvent("live", `Camera frame: hand/sterile-tip overlap ${Math.round(overlapPx)}px² (${data.live ? "SAM 3.1" : "demo geometry"}).`);
+      touchStreak = 0;
+    }
+  } else touchStreak = 0;
+  return overlapPx;
+}
+
+async function analyzeFrame() {
   const out = $("#segment-result");
-  out.textContent = "Asking segmenter…";
+  const image = captureFrame();
+  if (!image) { out.textContent = "Camera not ready yet."; return null; }
+  out.textContent = "Analyzing frame…";
   try {
-    const r = await fetch("/api/segment", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: "red connector" }) });
+    const r = await fetch("/api/segment-live", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image, prompts: LIVE_PROMPTS }) });
     const d = await r.json();
-    out.textContent = `${d.model}: ${d.boxes.length} box(es) for “red connector”${d.mock ? " (demo geometry)" : ""}.`;
-  } catch { out.textContent = "Segment API unreachable — bench sim still works offline."; }
+    if (!r.ok) throw new Error(d.error || "segment failed");
+    renderCamBoxes(d);
+    const ov = checkLiveBreach(d);
+    const found = (d.results || []).map(x => `${x.canonical}:${(x.boxes || []).length}`).join(" · ");
+    out.textContent = `${d.live ? "SAM 3.1 live" : "Demo geometry"} · ${d.latency_ms}ms · ${found} · overlap ${Math.round(ov)}px²`;
+    return d;
+  } catch (e) {
+    out.textContent = `Segmentation unavailable (${e.message}). Bench sim still works.`;
+    return null;
+  }
+}
+
+$("#btn-analyze").addEventListener("click", analyzeFrame);
+$("#btn-watch").addEventListener("click", () => {
+  const btn = $("#btn-watch");
+  if (watchTimer) {
+    clearInterval(watchTimer); watchTimer = null;
+    btn.textContent = "Start live watch";
+    $("#segment-result").textContent = "Live watch stopped.";
+    return;
+  }
+  btn.textContent = "Stop live watch";
+  logEvent("live", "Live watch started: a frame is analyzed every 3 seconds.");
+  const tick = async () => { if (!watchInFlight) { watchInFlight = true; await analyzeFrame(); watchInFlight = false; } };
+  tick();
+  watchTimer = setInterval(tick, 3000);
 });
 
 /* ================= PROTOCOL COMPILER ================= */

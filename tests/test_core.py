@@ -3,6 +3,52 @@ import unittest
 from core.protocol import compile_protocol, heuristic_compile
 from core.rules import bbox_overlap_area, evaluate_trace
 from core.meta_client import segment
+from core.sam_live import parse_sam_output, mask_overlap_px, segment_live
+
+
+WIRE = ("<0f>0<|box;x1=100;y1=100;x2=160;y2=140;w=640;h=400|>"
+        "<|mask;x=0;y=0;data=40,60,!abc|>,"
+        "1<|box;x1=130;y1=110;x2=180;y2=150;w=640;h=400|>"
+        "<|mask;x=0;y=0;data=40,50,!xyz|>")
+
+
+class SamParserTests(unittest.TestCase):
+    def test_parse_wire_boxes(self):
+        frames = parse_sam_output(WIRE)
+        self.assertEqual(len(frames), 1)
+        recs = frames[0]["records"]
+        self.assertEqual(len(recs), 2)
+        self.assertEqual(recs[0]["box"], {"x": 100, "y": 100, "w": 60, "h": 40})
+        self.assertEqual(recs[0]["mask"]["encoding"], "one_bit")
+
+    def test_box_overlap_fallback(self):
+        frames = parse_sam_output(WIRE)
+        a, b = frames[0]["records"]
+        area, kind = mask_overlap_px(a, b)  # payloads are fake -> box fallback
+        self.assertEqual(kind, "box")
+        self.assertEqual(area, 30 * 30)
+
+    def test_segment_live_mock_without_key(self):
+        out = segment_live("", ["red connector", "blue cap"])
+        self.assertTrue(out["mock"])
+        self.assertEqual(len(out["results"]), 2)
+
+    def test_segment_live_with_fake_sam(self):
+        import os
+        from unittest.mock import patch
+        frames = parse_sam_output(WIRE)
+        recs = frames[0]["records"]
+        def fake_call(image, prompt):
+            rec = recs[0] if "hand" in prompt else recs[1]
+            return [{"frame": 0, "records": [rec]}]
+        with patch.dict(os.environ, {"MODEL_API_KEY": "test", "SECONDNURSE_MODE": "live"}):
+            with patch("core.sam_live.call_sam", side_effect=fake_call):
+                out = segment_live("data:image/jpeg;base64,xx",
+                                   ["gloved hand", "red connector"])
+        self.assertTrue(out["live"])
+        self.assertEqual(out["touch"]["method"], "box")
+        self.assertEqual(out["touch"]["overlap_px"], 900.0)
+
 
 
 class ProtocolTests(unittest.TestCase):

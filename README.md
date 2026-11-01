@@ -31,8 +31,13 @@ demo geometry). To use the live Meta path, copy `.env.example` to `.env` and set
 1. **Protocol compiler** (`core/protocol.py`) — protocol text → StepGraph JSON
    (steps, objects, forbidden contacts, minimum times). Muse Wonder live, or a
    deterministic parser with the identical schema offline.
-2. **Perception** (`core/meta_client.py`) — SAM 3.1 text-prompted masks for hand,
-   cap, sterile connector tip and field. Demo geometry when no key is configured.
+2. **Perception** (`core/meta_client.py`, `core/sam_live.py`) — SAM 3.1 text-prompted
+   masks for hand, cap, sterile connector tip and field. The live path calls the
+   Responses API (`sam-3.1`, one request per concept), parses Meta's documented
+   wire grammar, decodes masks with the official `meta_sam_parser`, and measures
+   true mask overlap. Demo geometry when no key is configured. In the UI: camera
+   tab → *Analyze one frame* or *Start live watch* (a frame every 3s, breach after
+   2 consecutive overlapping frames).
 3. **Rule engine** (`core/rules.py`) — pure, tested geometry: mask overlap sustained
    ≥0.3s = TOUCH; cap centroid outside the field = FIELD; step jumps = ORDER.
    Produces events + a compliance score.
@@ -56,6 +61,7 @@ demo geometry). To use the live Meta path, copy `.env.example` to `.env` and set
 | `POST /api/compile` | `{protocol_text, name}` | StepGraph JSON |
 | `POST /api/evaluate` | `{frames: [...]}` | breach events + compliance score |
 | `POST /api/segment` | `{prompt}` | boxes for the prompt (demo or live SAM) |
+| `POST /api/segment-live` | `{image: dataURL, prompts: [...]}` | per-prompt SAM 3.1 boxes/masks for one camera frame, true mask-overlap measurement when hand + tip are found; demo geometry without a key |
 
 ## Layout
 
