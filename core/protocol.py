@@ -94,6 +94,35 @@ def heuristic_compile(text, name="Home exchange protocol"):
     }
 
 
+def _normalize_rule(rule, default_a="hand"):
+    if isinstance(rule, dict):
+        return {"a": str(rule.get("a", default_a)), "b": str(rule.get("b", "")),
+                "rule": str(rule.get("rule", "TOUCH")).upper()}
+    text = str(rule)
+    return {"a": default_a, "b": text, "rule": "TOUCH"}
+
+
+def _normalize_graph(graph):
+    steps = []
+    for i, s in enumerate(graph.get("steps", [])):
+        if not isinstance(s, dict):
+            continue
+        steps.append({
+            "id": f"step-{i + 1}",
+            "title": str(s.get("title", ""))[:180],
+            "objects": [str(o) for o in (s.get("objects") or [])],
+            "forbidden_contacts": [_normalize_rule(r) for r in (s.get("forbidden_contacts") or [])],
+            "min_seconds": int(s.get("min_seconds") or 0),
+        })
+    graph["steps"] = steps
+    graph["step_count"] = len(steps)
+    graph["global_rules"] = [_normalize_rule(r) for r in (graph.get("global_rules") or [])] or [
+        {"a": "hand", "b": "sterile connector tip", "rule": "TOUCH"},
+        {"a": "cap", "b": "outside sterile field", "rule": "FIELD"},
+    ]
+    return graph
+
+
 def _muse_compile(text, name):
     key = os.getenv("MODEL_API_KEY", "")
     if not key or os.getenv("SECONDNURSE_MODE") != "live":
@@ -117,9 +146,9 @@ def _muse_compile(text, name):
         content = data["choices"][0]["message"]["content"]
         graph = json.loads(content)
         if isinstance(graph, dict) and graph.get("steps"):
+            graph = _normalize_graph(graph)
             graph["source"] = "muse-wonder-live"
             graph["name"] = name[:120]
-            graph["step_count"] = len(graph["steps"])
             return graph
     except Exception:
         return None

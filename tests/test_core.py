@@ -1,6 +1,6 @@
 import unittest
 
-from core.protocol import compile_protocol, heuristic_compile
+from core.protocol import compile_protocol, heuristic_compile, _normalize_graph
 from core.rules import bbox_overlap_area, evaluate_trace
 from core.meta_client import segment
 from core.sam_live import parse_sam_output, mask_overlap_px, segment_live
@@ -64,6 +64,16 @@ class ProtocolTests(unittest.TestCase):
     def test_empty_input_requires_live_api(self):
         with self.assertRaises(RuntimeError):
             compile_protocol("")
+
+    def test_normalize_muse_schema_drift(self):
+        g = _normalize_graph({"steps": [{"id": 4, "title": "Uncap it",
+                                         "objects": ["cap"],
+                                         "forbidden_contacts": ["sterile connector tip"],
+                                         "min_seconds": 0}],
+                              "global_rules": ["Never touch the tip"]})
+        self.assertEqual(g["steps"][0]["id"], "step-1")
+        self.assertEqual(g["steps"][0]["forbidden_contacts"][0]["rule"], "TOUCH")
+        self.assertEqual(g["global_rules"][0]["a"], "hand")
 
 
 class RuleTests(unittest.TestCase):
