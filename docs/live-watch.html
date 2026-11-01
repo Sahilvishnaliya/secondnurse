@@ -16,7 +16,7 @@
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item is-active" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
-    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+    <div class="side-note"><strong>Real mode.</strong><br>SecondNurse runs the live Muse Wonder + SAM 3.1 pipeline. A configured Meta API key is required for AI endpoints.</div>
   </aside>
   <main class="content">
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Product</span><span>›</span><span class="crumb-pill">Live Watch</span></nav>
@@ -56,7 +56,7 @@
 <li><strong>Event log:</strong> every camera, compile, analysis, and breach event with session time.</li>
 </ul>
 <h2>Latency, honestly</h2>
-<p>Each frame costs one SAM request per prompt (four by default), plus mask decoding. Expect an analyzed frame every few seconds, not a 30fps overlay. That cadence catches “stop before you connect” events — the clinical moment that matters — and is not a mid-motion interception system. The UI always labels the last latency so the operator can see the real number.</p>
+<p>Each frame uses one SAM request per prompt (four by default), plus mask decoding. Expect an analyzed frame every few seconds, not a 30fps overlay. That cadence catches “stop before you connect” events — the clinical moment that matters — and is not a mid-motion interception system. The UI always labels the last latency so the operator can see the real number.</p>
 <h2>When objects are not found</h2>
 <p>A prompt can legitimately return zero matches (occluded tip, hand out of frame). The console shows “not found” in Live Results rather than guessing. Rules simply do not evaluate what was not seen, and the overlap counter resets only on a measured non-overlap, not on a missing frame.</p>
 

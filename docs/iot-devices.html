@@ -16,7 +16,7 @@
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item is-active" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
-    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+    <div class="side-note"><strong>Real mode.</strong><br>SecondNurse runs the live Muse Wonder + SAM 3.1 pipeline. A configured Meta API key is required for AI endpoints.</div>
   </aside>
   <main class="content">
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Product</span><span>›</span><span class="crumb-pill">IoT Devices</span></nav>
@@ -29,8 +29,8 @@
 <tr><td>Smartphone (rear camera)</td><td>Primary overhead camera</td><td><strong>Works today</strong></td><td>Browser <code>getUserMedia</code>; mount it 50–80&nbsp;cm above the bench facing down.</td></tr>
 <tr><td>USB webcam (1080p)</td><td>Fixed bench camera</td><td><strong>Works today</strong></td><td>Same browser path; better for a permanent home setup than a phone.</td></tr>
 <tr><td>Raspberry Pi Camera Module 3 + Pi 5</td><td>Edge camera node</td><td>Adapter-ready</td><td>Streams frames to <code>/api/segment-live</code> over HTTPS; keeps the phone free.</td></tr>
-<tr><td>ESP32-S3 CAM</td><td>Ultra-low-cost camera node</td><td>Adapter-ready</td><td>JPEG frames over Wi-Fi; low resolution means a tight bench framing is essential.</td></tr>
-<tr><td>NVIDIA Jetson Orin Nano</td><td>Edge AI node</td><td>Roadmap</td><td>Local pre-filtering (motion/presence) so only meaningful frames go to SAM; cuts latency and API cost.</td></tr>
+<tr><td>ESP32-S3 CAM</td><td>Compact camera node</td><td>Adapter-ready</td><td>JPEG frames over Wi-Fi; low resolution means a tight bench framing is essential.</td></tr>
+<tr><td>NVIDIA Jetson Orin Nano</td><td>Edge AI node</td><td>Roadmap</td><td>Local pre-filtering (motion/presence) so only meaningful frames go to SAM; cuts latency and request volume.</td></tr>
 <tr><td>Smart glasses (camera POV)</td><td>First-person camera</td><td>Roadmap</td><td>A wearer-POV feed removes the overhead mount; occlusion and motion blur are the open problems.</td></tr>
 </tbody></table>
 <h2>Mounts &amp; the physical kit</h2>
@@ -67,14 +67,13 @@
 <li><strong>Alerts out:</strong> breach events are emitted to a configurable webhook; home-automation platforms (Home Assistant, Hue, smart speakers) subscribe there. Home Assistant over MQTT or HTTP is the reference target.</li>
 <li><strong>Time is the join key.</strong> Every device event carries an epoch timestamp; the session record aligns vision, sensor, and alert streams on it.</li>
 </ul>
-<h3>Reference bench build</h3>
-<table><thead><tr><th>Part</th><th>Example</th><th>Approx. cost</th></tr></thead><tbody>
-<tr><td>Camera</td><td>Any 1080p USB webcam or the patient's phone</td><td>₹0–2,500</td></tr>
-<tr><td>Mount</td><td>Gooseneck / overhead arm, clamped to the table</td><td>₹800</td></tr>
-<tr><td>Light</td><td>LED desk panel, high CRI</td><td>₹1,200</td></tr>
-<tr><td>Training kit</td><td>Colour-coded caps, connector, mat, tubing, gloves</td><td>₹1,500</td></tr>
-<tr><td>Alert light (optional)</td><td>Matter/Hue bulb in a desk lamp</td><td>₹1,000</td></tr>
-<tr><td>Edge node (optional)</td><td>Raspberry Pi 5 + Camera Module 3</td><td>₹9,000</td></tr>
+<h2>Roadmap</h2>
+<p>The bench grows in phases. Each phase keeps the same session and rule engine — only the senses and alert channels multiply.</p>
+<table><thead><tr><th>Phase</th><th>Adds</th><th>Unlocks</th></tr></thead><tbody>
+<tr><td><strong>Now</strong></td><td>Overhead phone/webcam, colour-coded kit, even light, voice alerts</td><td>Live SAM masks, TOUCH/FIELD rules, spoken corrections</td></tr>
+<tr><td><strong>Next</strong></td><td>Raspberry Pi / ESP32 camera node, NFC-tagged caps, alert webhooks (speaker, smart light)</td><td>Hands-free bench, cap identity, room-scale alerts</td></tr>
+<tr><td><strong>Then</strong></td><td>Smart clamp switch, capacitive mat zones, BLE scale, presence sensor</td><td>Sensor-corroborated ORDER/FIELD rules and complete session records</td></tr>
+<tr><td><strong>Later</strong></td><td>Jetson edge pre-filtering, POV smart glasses, haptic wristband, care-team session reports</td><td>Lower latency, mount-free watching, silent alerts, nurse review loop</td></tr>
 </tbody></table>
 <h2>Device data &amp; privacy</h2>
 <ul>

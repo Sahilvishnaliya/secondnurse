@@ -16,7 +16,7 @@
 </header>
 <div class="layout">
   <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item is-active" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
-    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+    <div class="side-note"><strong>Real mode.</strong><br>SecondNurse runs the live Muse Wonder + SAM 3.1 pipeline. A configured Meta API key is required for AI endpoints.</div>
   </aside>
   <main class="content">
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Developers</span><span>›</span><span class="crumb-pill">Architecture</span></nav>
@@ -62,7 +62,7 @@ Alert + session log + Live Results        Protocol text
 <li>Mask rasters are box-cropped; overlap is computed by placing each raster at its box origin in frame coordinates — true pixel intersection, with box overlap only as a fallback if a payload fails to decode.</li>
 </ul>
 <h2>Why per-prompt requests</h2>
-<p>SAM accepts exactly one concept per request; list syntax returns nothing. Four prompts therefore cost four requests per frame. This is the dominant latency and cost term, and the reason watch mode samples at ~3s instead of pretending to be a video-rate system.</p>
+<p>SAM accepts exactly one concept per request; list syntax returns nothing. Four prompts therefore mean four requests per frame. This is the dominant latency term, and the reason watch mode samples at ~3s instead of pretending to be a video-rate system.</p>
 <h2>Security posture</h2>
 <ul>
 <li>API keys exist only as server-side environment variables.</li>

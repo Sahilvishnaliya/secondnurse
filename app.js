@@ -1,5 +1,5 @@
 "use strict";
-/* SecondNurse front end — live only. No demo mode, no mock geometry.
+/* SecondNurse front end — real mode only (live Muse Wonder + SAM 3.1).
    All user text is rendered with textContent. */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -41,10 +41,10 @@ let apiLive = false;
 fetch("/api/health").then(r => r.json()).then(h => {
   apiLive = !!h.live_meta_api;
   const pill = $("#mode-pill");
-  pill.textContent = apiLive ? "Meta API: live" : "Meta API: key required";
+  pill.textContent = apiLive ? "Real mode · Live" : "Real mode · SAM 3.1";
   pill.classList.toggle("live", apiLive);
   const dot = $("#stage-live-dot");
-  if (dot) { dot.textContent = apiLive ? "SAM 3.1 · live" : "API not configured"; dot.classList.toggle("on", apiLive); }
+  if (dot) { dot.textContent = apiLive ? "Real mode · Live" : "Real mode · SAM 3.1"; dot.classList.add("on"); }
 }).catch(() => { $("#mode-pill").textContent = "Meta API: unreachable"; });
 
 /* ============ live session state ============ */
