@@ -8,6 +8,12 @@ from app import app as _flask_app  # noqa: E402
 
 def _restore_original_path(environ):
     """Vercel rewrites /api/<route> to this function; recover the original path."""
+    from urllib.parse import parse_qs
+    params = parse_qs(environ.get("QUERY_STRING") or "")
+    sn_path = (params.get("sn_path") or [""])[0]
+    if sn_path:
+        environ["PATH_INFO"] = "/api/" + sn_path.lstrip("/")
+        return
     uri = (environ.get("REQUEST_URI") or "").split("?")[0]
     path = environ.get("PATH_INFO") or ""
     if uri.startswith("/api/") and not uri.startswith("/api/index.py"):
