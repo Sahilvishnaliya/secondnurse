@@ -216,6 +216,24 @@ body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opa
 @media (max-width:1080px){.anatomy{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.anatomy{grid-template-columns:1fr}.mask-note{margin-left:0}.stage-card{box-shadow:7px 7px 0 rgba(27,24,19,.9)}}
 
+/* ===== v3 accuracy pass: DESIGN.md tokens applied ===== */
+:root{--muted:#6E6455;--red:#B7332E;--amber:#8A5E10;--focus:#0F62FE}
+.btn{min-height:48px}
+.btn-sm{min-height:40px}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2.5px solid var(--focus);outline-offset:2px}
+.nav-links a{padding:12px 2px;min-height:44px;display:inline-flex;align-items:center}
+.lede{line-height:1.6}
+.src{font-size:.84rem}
+.mask-legend{font-size:.78rem}
+.stage-tabs .tab{color:#CFC6B4}
+.stage-tabs .tab.is-active{color:var(--ink)}
+.panel-title{min-height:30px;display:flex;align-items:flex-end}
+#compiler,#safety{background:#F3EEE3;box-shadow:0 0 0 100vmax #F3EEE3;clip-path:inset(0 -100vmax);padding-top:56px;padding-bottom:56px;margin-top:56px}
+.nav-actions .btn{min-height:44px}
+.sim-controls{align-items:center}
+.log li .t,.readout,.metric,.frame-head{letter-spacing:.16px}
+.hero-stats dd,.score-row p,.frame-card p{line-height:1.55}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
   html{scroll-behavior:auto}
