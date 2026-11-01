@@ -84,6 +84,7 @@ function inside(p, b) { return p[0] >= b.x && p[0] <= b.x + b.w && p[1] >= b.y &
 function setHand(x, y) {
   state.hand = { x, y };
   $("#svg-hand").setAttribute("transform", `translate(${x},${y})`);
+  $("#mask-hand").setAttribute("transform", `translate(${x},${y})`);
 }
 function setCap(x, y) {
   state.cap = { x, y };
@@ -91,6 +92,8 @@ function setCap(x, y) {
   cap.querySelector("rect").setAttribute("x", x); cap.querySelector("rect").setAttribute("y", y);
   const label = cap.querySelector("text");
   label.setAttribute("x", x + 18); label.setAttribute("y", y + 43);
+  $("#mask-cap-rect").setAttribute("x", x - 6); $("#mask-cap-rect").setAttribute("y", y - 6);
+  $("#mask-cap-line").setAttribute("x", x - 6); $("#mask-cap-line").setAttribute("y", y - 6);
 }
 
 function logEvent(kind, text) {

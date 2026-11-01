@@ -83,9 +83,13 @@
           </g>
           <rect id="svg-field" x="70" y="90" width="430" height="230" rx="14" fill="#E7F0EB" stroke="#0C6B57" stroke-width="1.5" stroke-dasharray="7 6"/>
           <path d="M120 300 C 260 260, 380 285, 470 225" fill="none" stroke="#B9AE99" stroke-width="9" stroke-linecap="round"/>
+          <rect class="scanline" x="60" y="86" width="470" height="2.5" fill="#0C6B57" opacity="0.35"/>
           <g id="svg-bag"><rect x="512" y="52" width="72" height="96" rx="10" fill="#DCE9F7" stroke="#2F6FED" stroke-width="1.5"/><text x="548" y="106" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#2F6FED">BAG</text></g>
           <g id="svg-tip"><rect x="452" y="196" width="30" height="36" rx="6" fill="#D64541"/><rect x="466" y="178" width="10" height="22" fill="#8E2F2B"/><text x="467" y="250" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8E2F2B">STERILE TIP</text></g>
           <g id="svg-cap"><rect x="205" y="255" width="36" height="25" rx="6" fill="#2F6FED"/><text x="223" y="298" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#2F6FED">CAP</text></g>
+          <g id="mask-tip" aria-hidden="true"><rect x="446" y="190" width="42" height="48" rx="11" fill="#D64541" opacity="0.16"/><rect x="446" y="190" width="42" height="48" rx="11" fill="none" stroke="#D64541" stroke-width="1.6" stroke-dasharray="5 4" class="mask-dash"/></g>
+          <g id="mask-cap" aria-hidden="true"><rect id="mask-cap-rect" x="199" y="249" width="48" height="37" rx="9" fill="#2F6FED" opacity="0.16"/><rect id="mask-cap-line" x="199" y="249" width="48" height="37" rx="9" fill="none" stroke="#2F6FED" stroke-width="1.6" stroke-dasharray="5 4" class="mask-dash"/></g>
+          <g id="mask-hand" transform="translate(285,120)" aria-hidden="true"><ellipse cx="34" cy="24" rx="40" ry="36" fill="#D97706" opacity="0.15"/><ellipse cx="34" cy="24" rx="40" ry="36" fill="none" stroke="#D97706" stroke-width="1.6" stroke-dasharray="5 4" class="mask-dash"/></g>
           <g id="svg-hand" transform="translate(285,120)">
             <circle cx="34" cy="26" r="30" fill="#F2C29B" stroke="#C98F5F" stroke-width="1.5"/>
             <rect x="16" y="-4" width="9" height="26" rx="4.5" fill="#F2C29B" stroke="#C98F5F"/>
@@ -97,6 +101,14 @@
         </svg>
         <video id="camera" autoplay playsinline muted hidden></video>
         <div class="camera-note" id="camera-note" hidden>Camera is local-only — frames never leave this device in demo mode. <button class="btn btn-dark btn-sm" id="btn-analyze">Capture &amp; ask SAM (demo geometry)</button> <span id="segment-result" class="mono"></span></div>
+      </div>
+
+      <div class="mask-legend" aria-label="Segmentation mask legend">
+        <span><i class="dot dot-hand"></i>SAM mask · hand</span>
+        <span><i class="dot dot-tip"></i>SAM mask · sterile tip</span>
+        <span><i class="dot dot-cap"></i>SAM mask · cap</span>
+        <span><i class="dot dot-field"></i>Sterile field boundary</span>
+        <span class="mask-note">Breach = mask overlap, sustained ≥ 0.3s</span>
       </div>
 
       <div class="sim-controls" aria-label="Scenario controls">
@@ -135,6 +147,17 @@
     </div>
   </section>
 
+  <div class="marquee" aria-hidden="true"><div class="marquee-track">
+    <span>Touch contamination is invisible</span><b>·</b><span>Half a second is enough</span><b>·</b><span>Nobody watches the fourth exchange of the day</span><b>·</b><span>A mask measures what an opinion guesses</span><b>·</b>
+    <span>Touch contamination is invisible</span><b>·</b><span>Half a second is enough</span><b>·</b><span>Nobody watches the fourth exchange of the day</span><b>·</b><span>A mask measures what an opinion guesses</span><b>·</b>
+  </div></div>
+
+  <section class="manifesto reveal">
+    <p class="manifesto-kicker">The unwatched moment</p>
+    <p class="manifesto-text">Hospitals discharge the patient. The nurse goes home. The procedure stays — <mark>four times a day, every day, alone.</mark> The most dangerous second in home care is the one no one is present for. SecondNurse is present for it.</p>
+    <div class="manifesto-sign"><span>Field note № 01</span><span>Bench record · sterile technique</span></div>
+  </section>
+
   <!-- ================= HOW IT WORKS ================= -->
   <section class="section reveal">
     <p class="eyebrow"><svg class="ic"><use href="#i-activity"/></svg> How it works</p>
@@ -143,6 +166,17 @@
       <article class="row"><span class="row-num">01</span><div><h3>Muse Wonder compiles the protocol</h3><p>A written procedure goes in. A machine-checkable step graph comes out: steps, required objects, forbidden contacts, minimum disinfection times. New procedure, new document — zero new code.</p></div><code class="row-code">PDF → StepGraph JSON</code></article>
       <article class="row"><span class="row-num">02</span><div><h3>SAM 3.1 tracks masks, not guesses</h3><p>Text prompts return pixel-precise masks for hands, cap, connector and sterile field, with identity preserved through the video. A vision-language model guesses; a mask measures.</p></div><code class="row-code">sam-3.1 · up to 16 objects</code></article>
       <article class="row"><span class="row-num">03</span><div><h3>A deterministic engine calls the breach</h3><p>Hand mask overlapping the sterile tip for over 0.3s is a touch contamination. Cap outside the field is a field breach. Skipped steps are order breaches. Thresholds you can defend, events you can replay.</p></div><code class="row-code">overlap ≥ 40px² · ≥ 0.3s</code></article>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <p class="eyebrow"><svg class="ic"><use href="#i-camera"/></svg> Anatomy of a catch</p>
+    <h2 class="section-title">Four-tenths of a second, in four frames.</h2>
+    <div class="anatomy">
+      <article class="frame-card"><div class="frame-head mono">t − 0.4s</div><div class="frame-stage"><i class="f-hand"></i><i class="f-tip"></i></div><h3>Approach</h3><p>The hand enters the bench. SAM holds its mask and identity; the tip&rsquo;s mask is armed.</p></article>
+      <article class="frame-card"><div class="frame-head mono">t − 0.1s</div><div class="frame-stage near"><i class="f-hand"></i><i class="f-tip"></i></div><h3>Proximity</h3><p>Masks near, not touching. No alert — proximity is not contamination, and false alarms teach people to ignore you.</p></article>
+      <article class="frame-card is-breach"><div class="frame-head mono">t 0.0s</div><div class="frame-stage breach"><i class="f-hand"></i><i class="f-tip"></i></div><h3>Overlap</h3><p>Hand mask ∩ tip mask crosses 40px². The dwell clock starts. One noisy frame still cannot fire.</p></article>
+      <article class="frame-card is-alert"><div class="frame-head mono">t + 0.3s</div><div class="frame-stage breach"><i class="f-hand"></i><i class="f-tip"></i></div><h3>The catch</h3><p>Sustained overlap confirmed. Procedure frozen, correction spoken, frames logged for the care team.</p></article>
     </div>
   </section>
 
@@ -208,6 +242,7 @@
 </main>
 
 <footer class="footer">
+  <div class="footer-word" aria-hidden="true">SecondNurse</div>
   <div class="brand"><svg class="ic ic-brand"><use href="#i-shield"/></svg><span>Second<strong>Nurse</strong></span></div>
   <p>Powered by Muse Wonder and SAM 3.1. Educational training simulator — not a medical device. Does not diagnose, treat, or make clinical decisions.</p>
   <p class="mono">SecondNurse · Training simulator</p>
