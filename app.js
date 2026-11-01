@@ -125,6 +125,7 @@ async function startCamera() {
     const video = $("#camera");
     video.srcObject = stream;
     video.classList.toggle("mirrored", facing === "user");
+    $("#cam-tools").hidden = false;
     $("#cam-empty").hidden = true;
     $("#camera-status").textContent = facing === "user"
       ? "Front camera live (mirrored preview). Analyze a frame or start live watch."
