@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Setup & First Watch | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: Setup & First Watch. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item is-active" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Getting Started</span><span>›</span><span class="crumb-pill">Setup & First Watch</span></nav>
+
+<h1>Setup &amp; First Watch</h1>
+<p>SecondNurse runs <strong>live only</strong>. You need a Meta Model API key. Without one, the app loads, the camera opens, and every AI endpoint returns <code>503 configuration required</code> — by design.</p>
+<h2>Requirements</h2>
+<ul>
+<li>A Meta Model API key with access to <code>muse-wonder-1.0</code> and <code>sam-3.1</code>.</li>
+<li>A phone or webcam that can see the whole bench from above.</li>
+<li>The training kit: red connector tip, blue cap, sterile field mat, gloves, tubing, fluid-bag stand-in.</li>
+<li>A modern browser with camera permission (HTTPS or localhost).</li>
+</ul>
+<h2>Configure the API key</h2>
+<h3>On Vercel</h3>
+<ol>
+<li>Open the project → <strong>Settings → Environment Variables</strong>.</li>
+<li>Add <code>MODEL_API_KEY</code> with your key (Production).</li>
+<li>Add <code>SECONDNURSE_MODE</code> with value <code>live</code>.</li>
+<li>Redeploy. The header pill switches from “key required” to “Meta API: live”.</li>
+</ol>
+<h3>Locally</h3>
+<pre><code>pip install -r requirements.txt
+cp .env.example .env   # set MODEL_API_KEY and SECONDNURSE_MODE=live
+python app.py          # http://127.0.0.1:5000</code></pre>
+<p>Keys are server-side environment variables only. They are never committed and never sent to the browser.</p>
+<h2>Set up the bench</h2>
+<ol>
+<li><strong>Mount the camera overhead</strong>, roughly 50–80&nbsp;cm above the bench, framing the sterile mat, connector, supplies, and both hands. See <a href="iot-devices.html">IoT Devices</a> for mounts and camera options.</li>
+<li><strong>Light it evenly.</strong> Avoid backlight and harsh shadows; masks are only as good as the frame.</li>
+<li><strong>Use the colour-coded kit.</strong> Big, matte, distinct parts (red tip, blue cap) are what make zero-shot SAM prompts reliable.</li>
+<li>Lay out supplies inside the sterile field before you start.</li>
+</ol>
+<h2>Your first live watch</h2>
+<ol>
+<li>Open the app and read the header: it must say <strong>Meta API: live</strong>.</li>
+<li>In the live console, choose <strong>Enable camera</strong> and allow permission.</li>
+<li>Choose <strong>Analyze one frame</strong>. Within a few seconds, SAM boxes appear over the hand, connector, cap, and field, and the Live Results table fills with what was found, confidence, mask size, and latency.</li>
+<li>Choose <strong>Start live watch</strong>. A frame is analyzed every 3 seconds.</li>
+<li>Perform the exchange. If your hand overlaps the sterile tip on two consecutive analyzed frames, the procedure stops: red alert, voice correction, score drop, logged event.</li>
+<li>End with <strong>Reset session</strong> when acknowledged and corrected.</li>
+</ol>
+<h2>Compile your protocol first (recommended)</h2>
+<p>Go to <a href="protocol-compiler.html">Protocol Compiler</a>, paste the procedure you were trained on, and compile it. The checklist in the live console is generated from that graph — steps, objects, forbidden contacts, and minimum disinfection times — so the system watches <em>your</em> protocol, not a generic one.</p>
+<h2>What “working” looks like</h2>
+<table><thead><tr><th>Signal</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Header pill: “Meta API: live”</td><td>Key configured; Muse + SAM reachable server-side.</td></tr>
+<tr><td>Boxes track your hand as you move</td><td>SAM prompts are matching the kit in your lighting.</td></tr>
+<tr><td>Live Results updates each frame</td><td>Real responses, with per-object confidence and latency.</td></tr>
+<tr><td>A deliberate touch fires the alert</td><td>End-to-end: camera → masks → geometry → rule → alert.</td></tr>
+</tbody></table>
+<p>If a deliberate touch does not fire, work through <a href="troubleshooting.html">FAQ &amp; Troubleshooting</a> — it is almost always framing, lighting, or a prompt/kit colour mismatch.</p>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

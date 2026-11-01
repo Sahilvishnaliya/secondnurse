@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Safety & Scope | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: Safety & Scope. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item is-active" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Getting Started</span><span>›</span><span class="crumb-pill">Safety & Scope</span></nav>
+
+<h1>Safety &amp; Scope</h1>
+<p>SecondNurse works next to a medical procedure, so its boundaries are stated plainly, in the product, in these docs, and in the code.</p>
+<h2>What SecondNurse is</h2>
+<ul>
+<li>An <strong>educational training system</strong>: a physical training kit, a real procedure performed on that kit, live technique feedback.</li>
+<li>A technique watcher: it detects the same events a nurse trainer watches for — touches, boundary breaks, skipped steps.</li>
+<li>A session record: events with frame evidence, reviewable by the patient and their care team.</li>
+</ul>
+<h2>What SecondNurse is not</h2>
+<ul>
+<li><strong>Not a medical device.</strong> It has no clinical validation and no regulatory clearance.</li>
+<li><strong>It cannot see bacteria.</strong> It detects the technique break that risks contamination — a proxy, stated as such.</li>
+<li><strong>It does not diagnose</strong> infection or any condition, and never recommends treatment (including antibiotics) or clinical action.</li>
+<li><strong>It does not replace training.</strong> A qualified nurse teaches the procedure; SecondNurse watches practice afterwards.</li>
+</ul>
+<h2>Human in charge</h2>
+<p>Consistent with Meta's Model API Acceptable Use Policy, outputs never make decisions affecting a person's health on their own. The system flags a technique break; the patient corrects it; a qualified person reviews flagged sessions. Alerts say “stop and correct the technique” — never “you are infected” or “proceed”.</p>
+<h2>Data handling</h2>
+<ul>
+<li>Camera frames are sent only to the Meta Model API you configured, for segmentation. SecondNurse stores no images or video.</li>
+<li>No real patient data is used in development or testing; the bench is a training kit.</li>
+<li>Session logs are event text and timestamps, kept in the browser session.</li>
+<li>API keys are server-side environment variables, never exposed to the client or the repository.</li>
+</ul>
+<h2>Known limitations</h2>
+<ul>
+<li><strong>Occlusion:</strong> a hand covering the tip is both the event and the hardest frame to segment. Consecutive-frame confirmation and box-prompt tracking mitigate; they do not eliminate.</li>
+<li><strong>Latency:</strong> seconds per analyzed frame. Suitable for “stop before you connect”, not for intercepting fast motion.</li>
+<li><strong>Kit dependence:</strong> reliability is engineered around colour-coded, matte, generously sized training parts. Clinical hardware would need its own validation set.</li>
+<li><strong>Model variance:</strong> SAM and Muse are upstream services; a step graph must be human-reviewed, and a missed detection must never be treated as proof of sterility.</li>
+</ul>
+<h2>The rule that governs all of it</h2>
+<blockquote>SecondNurse may say “that touch happened.” It may never say “you are safe.” Absence of an alert is absence of a detection, not a guarantee of sterility.</blockquote>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

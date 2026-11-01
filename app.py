@@ -1,4 +1,4 @@
-"""SecondNurse web app. Thin Flask layer over core/ (mock-first Meta adapter)."""
+"""SecondNurse web app. Thin Flask layer over core/ (live Meta adapter)."""
 import os
 import time
 from collections import defaultdict, deque
@@ -57,11 +57,23 @@ def script():
     return send_from_directory(ROOT, "app.js", mimetype="text/javascript")
 
 
+@app.get("/docs/")
+def docs_index():
+    return send_from_directory(os.path.join(ROOT, "docs"), "index.html")
+
+
+@app.get("/docs/<path:name>")
+def docs_page(name):
+    if ".." in name or name.startswith("/"):
+        return jsonify({"error": "Not found."}), 404
+    return send_from_directory(os.path.join(ROOT, "docs"), name)
+
+
 @app.get("/api/health")
 def health():
     return jsonify({"status": "ok", "live_meta_api": LIVE,
                     "models": {"reasoning": "muse-wonder-1.0", "segmentation": "sam-3.1"},
-                    "mode": "live" if LIVE else "demo (no MODEL_API_KEY)"})
+                    "mode": "live" if LIVE else "configuration required (no MODEL_API_KEY)"})
 
 
 def _json_body():
@@ -82,7 +94,10 @@ def compile_route():
     name = body.get("name", "Home exchange protocol")
     if not isinstance(text, str) or not isinstance(name, str):
         return jsonify({"error": "protocol_text and name must be strings."}), 400
-    return jsonify(compile_protocol(text, name))
+    try:
+        return jsonify(compile_protocol(text, name))
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 503
 
 
 @app.post("/api/evaluate")
@@ -100,7 +115,10 @@ def segment_route():
     body = _json_body()
     if body is None or not isinstance(body.get("prompt"), str):
         return jsonify({"error": "Body must be {prompt: string}."}), 400
-    return jsonify(segment(body["prompt"]))
+    try:
+        return jsonify(segment(body["prompt"]))
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 503
 
 
 @app.post("/api/segment-live")
@@ -117,6 +135,8 @@ def segment_live_route():
         return jsonify(segment_live(body.get("image", ""), prompts))
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 503
     except Exception:
         return jsonify({"error": "Live segmentation failed. Check MODEL_API_KEY / SECONDNURSE_MODE."}), 502
 

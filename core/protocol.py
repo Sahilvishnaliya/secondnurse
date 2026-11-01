@@ -127,4 +127,7 @@ def _muse_compile(text, name):
 
 
 def compile_protocol(text, name="Home exchange protocol"):
-    return _muse_compile(text, name) or heuristic_compile(text, name)
+    graph = _muse_compile(text, name)
+    if graph is None:
+        raise RuntimeError("Meta API not configured: set MODEL_API_KEY and SECONDNURSE_MODE=live.")
+    return graph

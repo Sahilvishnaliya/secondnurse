@@ -28,10 +28,9 @@ class SamParserTests(unittest.TestCase):
         self.assertEqual(kind, "box")
         self.assertEqual(area, 30 * 30)
 
-    def test_segment_live_mock_without_key(self):
-        out = segment_live("", ["red connector", "blue cap"])
-        self.assertTrue(out["mock"])
-        self.assertEqual(len(out["results"]), 2)
+    def test_segment_live_without_key_is_refused(self):
+        with self.assertRaises(RuntimeError):
+            segment_live("", ["red connector", "blue cap"])
 
     def test_segment_live_with_fake_sam(self):
         import os
@@ -62,8 +61,9 @@ class ProtocolTests(unittest.TestCase):
         rules = g["steps"][0]["forbidden_contacts"]
         self.assertTrue(any(r["rule"] == "TOUCH" for r in rules))
 
-    def test_empty_input_falls_back_to_default(self):
-        self.assertGreaterEqual(compile_protocol("")["step_count"], 5)
+    def test_empty_input_requires_live_api(self):
+        with self.assertRaises(RuntimeError):
+            compile_protocol("")
 
 
 class RuleTests(unittest.TestCase):
@@ -95,10 +95,9 @@ class RuleTests(unittest.TestCase):
 
 
 class SegmentTests(unittest.TestCase):
-    def test_mock_segment_is_labelled(self):
-        out = segment("red connector")
-        self.assertIn("boxes", out)
-        self.assertTrue(out["mock"] or out["live"])
+    def test_segment_without_key_is_refused(self):
+        with self.assertRaises(RuntimeError):
+            segment("red connector")
 
 
 if __name__ == "__main__":

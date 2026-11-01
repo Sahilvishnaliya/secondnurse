@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IoT Devices | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: IoT Devices. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item is-active" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Product</span><span>›</span><span class="crumb-pill">IoT Devices</span></nav>
+
+<h1>IoT Devices</h1>
+<p>SecondNurse is software, but it watches a <strong>physical bench</strong>. This page is the hardware story: what the camera sees with, what the bench can sense, and how alerts leave the screen and enter the room.</p>
+<p>Status labels are honest: <strong>Works today</strong> (implemented in this codebase), <strong>Adapter-ready</strong> (the API surface exists; a small integration wires it), <strong>Roadmap</strong> (designed, not built).</p>
+<h2>Cameras — the eyes</h2>
+<table><thead><tr><th>Device</th><th>Role</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Smartphone (rear camera)</td><td>Primary overhead camera</td><td><strong>Works today</strong></td><td>Browser <code>getUserMedia</code>; mount it 50–80&nbsp;cm above the bench facing down.</td></tr>
+<tr><td>USB webcam (1080p)</td><td>Fixed bench camera</td><td><strong>Works today</strong></td><td>Same browser path; better for a permanent home setup than a phone.</td></tr>
+<tr><td>Raspberry Pi Camera Module 3 + Pi 5</td><td>Edge camera node</td><td>Adapter-ready</td><td>Streams frames to <code>/api/segment-live</code> over HTTPS; keeps the phone free.</td></tr>
+<tr><td>ESP32-S3 CAM</td><td>Ultra-low-cost camera node</td><td>Adapter-ready</td><td>JPEG frames over Wi-Fi; low resolution means a tight bench framing is essential.</td></tr>
+<tr><td>NVIDIA Jetson Orin Nano</td><td>Edge AI node</td><td>Roadmap</td><td>Local pre-filtering (motion/presence) so only meaningful frames go to SAM; cuts latency and API cost.</td></tr>
+<tr><td>Smart glasses (camera POV)</td><td>First-person camera</td><td>Roadmap</td><td>A wearer-POV feed removes the overhead mount; occlusion and motion blur are the open problems.</td></tr>
+</tbody></table>
+<h2>Mounts &amp; the physical kit</h2>
+<table><thead><tr><th>Item</th><th>Role</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Overhead arm / gooseneck mount</td><td>Stable top-down framing</td><td><strong>Works today</strong></td><td>Frame must include mat, connector, supplies, and both hands, with margin.</td></tr>
+<tr><td>Colour-coded training kit</td><td>Segmentation reliability</td><td><strong>Works today</strong></td><td>Red connector tip, blue cap, matte finishes, larger-than-clinical parts. Colour is a feature: it is what SAM prompts key on.</td></tr>
+<tr><td>LED bench light (high CRI)</td><td>Consistent masks</td><td><strong>Works today</strong></td><td>Even, shadow-free light matters more than camera resolution.</td></tr>
+<tr><td>Printed bench mat with fiducials</td><td>Field boundary + calibration</td><td>Roadmap</td><td>Corner markers would let the app auto-locate the sterile field instead of prompting for it.</td></tr>
+</tbody></table>
+<h2>Bench sensors — beyond vision</h2>
+<p>Vision watches technique. Small sensors can corroborate the moments vision finds hard — contact, opening, timing — and each maps to a rule the engine already understands.</p>
+<table><thead><tr><th>Device</th><th>Senses</th><th>Rule it strengthens</th><th>Status</th></tr></thead><tbody>
+<tr><td>NFC/RFID-tagged caps (NTAG / MIFARE)</td><td>Which cap, opened when, used or discarded</td><td>FIELD, ORDER</td><td>Adapter-ready — phone NFC or a PN532 reader posts cap events to the session.</td></tr>
+<tr><td>Smart clamp with contact switch</td><td>Clamp open/closed + timestamp</td><td>ORDER, timing</td><td>Roadmap — a reed switch + ESP32 publishes state changes.</td></tr>
+<tr><td>BLE bench scale</td><td>Bag weight → drained/filled volume</td><td>Procedure completeness</td><td>Roadmap — corroborates exchange volumes; not a sterile-technique signal.</td></tr>
+<tr><td>Capacitive touch pad under the sterile mat</td><td>Objects set down outside/inside zones</td><td>FIELD</td><td>Roadmap — a ground-truth second opinion for cap placement.</td></tr>
+<tr><td>Room presence / door sensor</td><td>Interruptions mid-procedure</td><td>Session integrity</td><td>Roadmap — flags “procedure paused, hands left the bench” gaps in the record.</td></tr>
+</tbody></table>
+<h2>Alert devices — leaving the screen</h2>
+<p>A screen alert assumes the patient is looking at the screen. During a procedure, they are looking at their hands. Alerts should live where attention is.</p>
+<table><thead><tr><th>Device</th><th>Alert channel</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Browser voice (speech synthesis)</td><td>Spoken correction</td><td><strong>Works today</strong></td><td>“Stop — sterile tip touched. Replace the cap.” Hands-free by design.</td></tr>
+<tr><td>Smart speaker (Alexa / Google / HomePod via webhook)</td><td>Room audio alert</td><td>Adapter-ready</td><td>The breach event POSTs to a home-automation webhook; the speaker announces it.</td></tr>
+<tr><td>Stack light / smart bulb (Hue, Matter)</td><td>Red room light on breach</td><td>Adapter-ready</td><td>Impossible to miss, impossible to misunderstand; resets on acknowledge.</td></tr>
+<tr><td>Haptic wristband / smartwatch</td><td>Wrist buzz on breach</td><td>Roadmap</td><td>Private, silent, works when the room is loud or the patient is hard of hearing.</td></tr>
+<tr><td>Care-team notification (SMS / app push)</td><td>Session report to nurse</td><td>Roadmap</td><td>End-of-session summary with frame evidence — review, not real-time alarm fatigue.</td></tr>
+</tbody></table>
+<h2>How devices connect</h2>
+<h3>Today: one HTTPS path</h3>
+<p>The browser is the gateway. Camera frames go to <code>POST /api/segment-live</code>; events render in the session. Any device that can POST a JPEG frame or a JSON event to the SecondNurse server can join — that is the entire integration contract.</p>
+<h3>Adapter-ready: events in, alerts out</h3>
+<ul>
+<li><strong>Sensor events in:</strong> a small bridge (Pi/ESP32) POSTs JSON events — cap opened, clamp state, scale reading — which the session log records alongside vision events with a shared timestamp.</li>
+<li><strong>Alerts out:</strong> breach events are emitted to a configurable webhook; home-automation platforms (Home Assistant, Hue, smart speakers) subscribe there. Home Assistant over MQTT or HTTP is the reference target.</li>
+<li><strong>Time is the join key.</strong> Every device event carries an epoch timestamp; the session record aligns vision, sensor, and alert streams on it.</li>
+</ul>
+<h3>Reference bench build</h3>
+<table><thead><tr><th>Part</th><th>Example</th><th>Approx. cost</th></tr></thead><tbody>
+<tr><td>Camera</td><td>Any 1080p USB webcam or the patient's phone</td><td>₹0–2,500</td></tr>
+<tr><td>Mount</td><td>Gooseneck / overhead arm, clamped to the table</td><td>₹800</td></tr>
+<tr><td>Light</td><td>LED desk panel, high CRI</td><td>₹1,200</td></tr>
+<tr><td>Training kit</td><td>Colour-coded caps, connector, mat, tubing, gloves</td><td>₹1,500</td></tr>
+<tr><td>Alert light (optional)</td><td>Matter/Hue bulb in a desk lamp</td><td>₹1,000</td></tr>
+<tr><td>Edge node (optional)</td><td>Raspberry Pi 5 + Camera Module 3</td><td>₹9,000</td></tr>
+</tbody></table>
+<h2>Device data &amp; privacy</h2>
+<ul>
+<li>Camera frames are sent only to the configured Meta API for segmentation; SecondNurse stores no video.</li>
+<li>Sensor events are numbers and timestamps (cap opened, clamp closed) — no content, no audio, no continuous recording.</li>
+<li>Devices pair to a session locally; there is no always-on cloud listener in the home.</li>
+<li>A physical camera shutter / hardware mute remains the patient's — the system must be visibly off when it is off.</li>
+</ul>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

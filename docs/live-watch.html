@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Watch | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: Live Watch. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item is-active" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Product</span><span>›</span><span class="crumb-pill">Live Watch</span></nav>
+
+<h1>Live Watch</h1>
+<p>Live Watch is the core loop: your camera, SAM 3.1 masks, a deterministic rule engine, and an alert that arrives <strong>before</strong> a contaminated connection is made.</p>
+<h2>The frame pipeline</h2>
+<ol>
+<li>The browser captures a frame (max 640px wide, JPEG) from the camera every 3 seconds in watch mode, or on demand.</li>
+<li>The server sends one SAM 3.1 Responses request <strong>per concept prompt</strong> — SAM accepts a single noun phrase per request.</li>
+<li>Responses stream back in Meta's special-token wire format. SecondNurse parses boxes and masks per object, per frame.</li>
+<li>Masks are decoded with the official <code>meta_sam_parser</code>; hand∩tip overlap is measured in pixels.</li>
+<li>Rules evaluate the frame; consecutive-frame logic confirms or clears the event.</li>
+</ol>
+<h2>Prompts used</h2>
+<table><thead><tr><th>Prompt</th><th>Canonical object</th><th>Why this wording</th></tr></thead><tbody>
+<tr><td><code>gloved hand</code></td><td>hand</td><td>Concrete noun phrase; attributes narrow the match.</td></tr>
+<tr><td><code>red connector</code></td><td>sterile_tip</td><td>Colour + object; the training kit's tip is red by design.</td></tr>
+<tr><td><code>blue cap</code></td><td>cap</td><td>Distinct colour avoids confusion with the connector.</td></tr>
+<tr><td><code>sterile field mat</code></td><td>field</td><td>Defines the containment boundary for the FIELD rule.</td></tr>
+</tbody></table>
+<p>Prompts are short noun phrases on purpose: commands and questions (“segment the…”, “where is…”) are unreliable with SAM. Negation and spatial phrasing are avoided; position logic lives in the rule engine, not the prompt.</p>
+<h2>The three rules</h2>
+<h3>TOUCH — contamination</h3>
+<p>Hand mask ∩ sterile-tip mask ≥ 40px² on <strong>two consecutive analyzed frames</strong>. Two frames, because one noisy frame must never stop a procedure — and because in live mode frames arrive every ~3 seconds, consecutive confirmation is the temporal evidence available.</p>
+<h3>FIELD — sterile boundary</h3>
+<p>The cap's centroid must remain inside the sterile-field mask while it is a free object. A cap set down outside the field is flagged; the patient discards it and takes a fresh one.</p>
+<h3>ORDER — protocol sequence</h3>
+<p>Steps must complete in the compiled order. The server-side trace evaluator (<code>POST /api/evaluate</code>) flags a jump to step <em>n+2</em> before step <em>n+1</em> completed.</p>
+<h2>Reading the console</h2>
+<ul>
+<li><strong>hand ∩ sterile tip:</strong> the current frame's measured overlap in px², with the method used (mask or box fallback).</li>
+<li><strong>Consecutive overlaps:</strong> the confirmation counter toward a TOUCH alert.</li>
+<li><strong>Cap in sterile field:</strong> yes / NO / — (not enough objects found).</li>
+<li><strong>Last frame latency:</strong> full round trip for all prompts on the last frame.</li>
+<li><strong>Compliance score:</strong> starts at 100; −25 per confirmed breach. A session record, not a clinical judgement.</li>
+<li><strong>Event log:</strong> every camera, compile, analysis, and breach event with session time.</li>
+</ul>
+<h2>Latency, honestly</h2>
+<p>Each frame costs one SAM request per prompt (four by default), plus mask decoding. Expect an analyzed frame every few seconds, not a 30fps overlay. That cadence catches “stop before you connect” events — the clinical moment that matters — and is not a mid-motion interception system. The UI always labels the last latency so the operator can see the real number.</p>
+<h2>When objects are not found</h2>
+<p>A prompt can legitimately return zero matches (occluded tip, hand out of frame). The console shows “not found” in Live Results rather than guessing. Rules simply do not evaluate what was not seen, and the overlap counter resets only on a measured non-overlap, not on a missing frame.</p>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAQ & Troubleshooting | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: FAQ & Troubleshooting. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item is-active" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Developers</span><span>›</span><span class="crumb-pill">FAQ & Troubleshooting</span></nav>
+
+<h1>FAQ &amp; Troubleshooting</h1>
+<h2>General</h2>
+<h3>Is SecondNurse a medical device?</h3>
+<p>No. It is an educational training system for sterile technique, used with a training kit. See <a href="safety.html">Safety &amp; Scope</a>.</p>
+<h3>Why is there no demo mode?</h3>
+<p>Because fabricated geometry teaches nothing and misleads evaluators. Without a Meta API key the AI endpoints return <code>503 configuration required</code>. The interface, docs, and rule engine remain inspectable, but no result is ever invented.</p>
+<h3>Which procedures does it support?</h3>
+<p>Any procedure you can (a) write as steps and (b) perform with visually distinct parts: peritoneal dialysis exchanges, home infusion connections, catheter care, wound dressing. The compiler turns the text into checks; SAM prompts name the parts.</p>
+<h2>Setup problems</h2>
+<h3>Header says “key required”</h3>
+<p><code>MODEL_API_KEY</code> or <code>SECONDNURSE_MODE=live</code> is missing where the server runs. On Vercel, set both for Production and redeploy; locally, check your <code>.env</code> is loaded by the process you started.</p>
+<h3>Camera will not start</h3>
+<p>The page must be on HTTPS or localhost, and permission must be granted for this origin. In the docs and app, camera code only runs after you press <strong>Enable camera</strong> — nothing records passively.</p>
+<h3>Compile returns 503</h3>
+<p>Same configuration gate as above. Compilation is a Muse Wonder call; there is intentionally no offline substitute producing official-looking graphs.</p>
+<h2>Detection problems</h2>
+<h3>SAM finds nothing (“not found”)</h3>
+<ul>
+<li>Reframe: the object may be out of shot, occluded, or too small. Move the camera closer / higher.</li>
+<li>Light: add even light; kill backlight and specular glare on plastic.</li>
+<li>Prompt: keep it a short noun phrase with a concrete attribute — <code>red connector</code>, not <code>the thing I connect</code>.</li>
+<li>Kit: confirm colours match the prompts (red tip, blue cap). Prompt and kit are a pair.</li>
+</ul>
+<h3>Boxes jump between objects</h3>
+<p>Two similar objects in frame will compete for one prompt. Separate them spatially, differentiate colour, and keep the bench uncluttered — the sterile field should contain only the procedure.</p>
+<h3>A real touch did not alert</h3>
+<p>Check, in order: was the overlap ≥40px² in the analyzed frames (see Live Results)? Did it persist across two consecutive analyzed frames? Was the tip found in those frames at all? Slow the movement during early sessions; the cadence is ~3s per frame.</p>
+<h3>False alerts on clean runs</h3>
+<p>Usually a hand passing <em>over</em> the tip in 2D while above it in 3D. Raise the camera (more top-down = less parallax), tighten the bench, and confirm the threshold in Live Results before changing it — thresholds are clinical-training decisions, not vibes.</p>
+<h2>Performance</h2>
+<h3>Latency is several seconds</h3>
+<p>Expected: one SAM request per prompt per frame. Reduce prompts, reduce frame size, or move to an edge node (<a href="iot-devices.html">IoT Devices</a>) that only sends frames on motion.</p>
+<h3>Rate limited (429)</h3>
+<p>Compile allows 30/min and live segmentation 20/min per client. Live watch at 3s/frame with default prompts sits inside the limit; parallel tabs may not.</p>
+<h2>Still stuck?</h2>
+<p>Read the failing frame, not the code: open Live Results, note which prompt returned “not found”, and fix the physical setup for that object first. In this system, most software symptoms are bench symptoms.</p>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

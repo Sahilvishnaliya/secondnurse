@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Protocol Compiler | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: Protocol Compiler. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item is-active" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Product</span><span>›</span><span class="crumb-pill">Protocol Compiler</span></nav>
+
+<h1>Protocol Compiler</h1>
+<p>Hardcoded checks are a demo trick. The Protocol Compiler turns any written sterile procedure into <strong>executable vision checks</strong> — the anti-hardcoding core of SecondNurse.</p>
+<h2>What goes in, what comes out</h2>
+<p><strong>In:</strong> plain protocol text — the steps as a patient was taught them, numbered or not.</p>
+<p><strong>Out:</strong> a StepGraph JSON document:</p>
+<pre><code>{
+  "name": "Home exchange protocol",
+  "source": "muse-wonder-live",
+  "step_count": 7,
+  "steps": [
+    { "id": "step-1", "title": "Wash and fully dry your hands…",
+      "objects": ["hand hygiene"], "forbidden_contacts": [], "min_seconds": 20 }
+  ],
+  "global_rules": [
+    { "a": "hand", "b": "sterile connector tip", "rule": "TOUCH" },
+    { "a": "cap", "b": "outside sterile field", "rule": "FIELD" }
+  ]
+}</code></pre>
+<h2>How compilation works</h2>
+<ol>
+<li>Protocol text is sent to <strong>Muse Wonder</strong> (<code>muse-wonder-1.0</code>) with a strict JSON-only instruction: steps, required objects per step, forbidden contacts, minimum seconds where the text states a duration.</li>
+<li>The response is validated as structured JSON with a non-empty steps array. Anything else is rejected, not repaired silently.</li>
+<li>The graph drives the UI checklist and is the same schema the server-side rule evaluator consumes for ORDER checks.</li>
+<li>Two global sterile rules are always present (TOUCH, FIELD) even if a given protocol text forgets to state them — they are properties of sterile technique, not of one document.</li>
+</ol>
+<h2>Writing a compilable protocol</h2>
+<ul>
+<li><strong>One action per line.</strong> “Wash hands, dry them, then glove” compiles worse than three lines.</li>
+<li><strong>Name objects concretely.</strong> “The connector tip” beats “it”; object extraction keys on named things.</li>
+<li><strong>State durations numerically.</strong> “Scrub for 20 seconds” yields <code>min_seconds: 20</code>; “scrub well” yields nothing enforceable.</li>
+<li><strong>State prohibitions explicitly.</strong> “Never touch the sterile connector tip” becomes a forbidden-contact rule.</li>
+<li><strong>Use your own words.</strong> Do not paste a manufacturer's proprietary manual. Write the procedure as taught, from public guidance, in your own phrasing.</li>
+</ul>
+<h2>Trust, but verify the graph</h2>
+<p>A language model can invent or drop a step. The compiler UI therefore shows the full generated graph — cards per step with object chips, forbidden-contact chips, and time chips, plus the raw JSON. <strong>Read it before a session.</strong> If a step is wrong, fix the source text and recompile; the graph is only ever as good as the document and the human who reviewed it.</p>
+<h2>API</h2>
+<p><code>POST /api/compile</code> with <code>{ "protocol_text": "…", "name": "…" }</code> returns the StepGraph, or <code>503</code> when the Meta API is not configured, or <code>400</code> for malformed input. Compilation is rate-limited per client. See <a href="api-reference.html">API Reference</a>.</p>
+<h2>Why a compiler, architecturally</h2>
+<p>Every prior procedure-monitoring system ships with per-procedure engineering: new dataset, new training, new deployment. Foundation models invert that. SAM segments anything named; Muse compiles anything written. The procedure becomes <em>data</em>, and SecondNurse — the watcher — stays the same program across dialysis, infusion, catheter, and wound-care protocols.</p>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

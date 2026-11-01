@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>API Reference | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: API Reference. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item is-active" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Developers</span><span>›</span><span class="crumb-pill">API Reference</span></nav>
+
+<h1>API Reference</h1>
+<p>Base: the SecondNurse origin. All bodies are JSON. AI endpoints return <code>503</code> with an explanatory error when <code>MODEL_API_KEY</code> / <code>SECONDNURSE_MODE=live</code> are not configured — they never return fabricated data.</p>
+<h2>GET /api/health</h2>
+<pre><code>{ "status": "ok", "live_meta_api": true,
+  "models": { "reasoning": "muse-wonder-1.0", "segmentation": "sam-3.1" },
+  "mode": "live" }</code></pre>
+<h2>POST /api/compile</h2>
+<p>Compile protocol text into a StepGraph via Muse Wonder. Rate-limited.</p>
+<pre><code>→ { "protocol_text": "1. Wash hands for 20 seconds…", "name": "Home exchange protocol" }
+← { "name": "…", "source": "muse-wonder-live", "step_count": 7,
+    "steps": [ { "id": "step-1", "title": "…", "objects": ["…"],
+                 "forbidden_contacts": [], "min_seconds": 20 } ],
+    "global_rules": [ … ] }</code></pre>
+<table><thead><tr><th>Error</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>400</code></td><td>Missing/invalid JSON, or non-string fields.</td></tr>
+<tr><td><code>429</code></td><td>Rate limit (30/min per client).</td></tr>
+<tr><td><code>503</code></td><td>Meta API not configured.</td></tr></tbody></table>
+<h2>POST /api/segment-live</h2>
+<p>Segment one camera frame for up to five concept prompts. One SAM 3.1 request per prompt; masks decoded server-side; hand∩tip overlap measured when both are found.</p>
+<pre><code>→ { "image": "data:image/jpeg;base64,…",
+    "prompts": ["gloved hand", "red connector", "blue cap", "sterile field mat"] }
+← { "live": true, "model": "sam-3.1", "latency_ms": 2400,
+    "results": [ { "prompt": "red connector", "canonical": "sterile_tip",
+                   "frame_w": 640, "frame_h": 360,
+                   "boxes": [ { "x": 452, "y": 196, "w": 30, "h": 36,
+                                "confidence": 0.93, "mask": { "w": 30, "h": 36 } } ] } ],
+    "touch": { "overlap_px": 0.0, "method": "mask" } }</code></pre>
+<ul>
+<li><code>canonical</code> maps prompts to rule objects: <code>hand</code>, <code>sterile_tip</code>, <code>cap</code>, <code>field</code>.</li>
+<li><code>touch.method</code> is <code>mask</code> for true pixel overlap, <code>box</code> only if a mask payload could not be decoded.</li>
+<li>Errors: <code>400</code> bad body/image, <code>429</code> rate limit (20/min), <code>503</code> not configured, <code>502</code> upstream SAM failure.</li>
+</ul>
+<h2>POST /api/evaluate</h2>
+<p>Evaluate a recorded trace of tracked frames against the breach rules (used for testing and offline analysis).</p>
+<pre><code>→ { "frames": [ { "t": 0.0, "step": 1,
+                  "objects": { "hand": {"x":…,"y":…,"w":…,"h":…},
+                               "sterile_tip": {…}, "cap": {…} },
+                  "field": {"x":…,"y":…,"w":…,"h":…} } ] }
+← { "events": [ { "type": "TOUCH", "t": 1.2, "detail": "…", "overlap_px": 225 } ],
+    "event_count": 1, "compliance_score": 75 }</code></pre>
+<p>Rules: overlap sustained ≥0.3s of trace time fires TOUCH; cap centroid outside the field fires FIELD; a step jump fires ORDER. Score is 100 − 25 per event.</p>
+<h2>POST /api/segment</h2>
+<p>Single-prompt convenience route retained for integrations. Live segmentations should use <code>/api/segment-live</code> with a frame; without a frame or configuration it returns <code>503</code>.</p>
+<h2>Conventions</h2>
+<ul>
+<li>Coordinates are source-frame pixels, top-left origin. The front end converts to percentages for overlays.</li>
+<li>Timestamps are seconds within a session/trace.</li>
+<li>Error bodies are always <code>{ "error": "human-readable reason" }</code>.</li>
+</ul>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Introduction | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: Introduction. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item is-active" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Getting Started</span><span>›</span><span class="crumb-pill">Introduction</span></nav>
+
+<h1>Introduction</h1>
+<p>Welcome to the <strong>SecondNurse</strong> documentation.</p>
+<p>SecondNurse watches a person's hands while they perform a sterile procedure at home — a dialysis fluid exchange, a home infusion connection, catheter care — and <strong>stops them the second sterile technique breaks</strong>: a hand touching the sterile connector tip, a cap set down outside the sterile field, a step performed out of order.</p>
+<p>A nurse trains a patient <strong>once</strong>. The patient then performs the procedure alone, at home, for years. The commonest cause of dialysis-related infection is “touch contamination” — a half-second contact nobody saw, nobody reported, discovered days later as peritonitis. SecondNurse is the watcher who is present for that second.</p>
+<h2>What is SecondNurse?</h2>
+<p>SecondNurse is built around one definition:</p>
+<blockquote>Contamination is a geometric event: a non-sterile mask overlapping a sterile mask, sustained over time.</blockquote>
+<ul>
+<li><strong>Make the invisible visible.</strong> A touch you cannot see and may not feel becomes a measured, logged event.</li>
+<li><strong>Correct in the moment.</strong> Feedback arrives before the connection is made — not in a report after the infection.</li>
+<li><strong>Compile, don't hardcode.</strong> Any written protocol becomes executable checks.</li>
+</ul>
+<h2>Core philosophy</h2>
+<ol>
+<li><strong>Geometry over opinion:</strong> SAM 3.1 returns pixel masks. The breach decision is mask overlap sustained across frames — a measurement with thresholds, not a language model's guess.</li>
+<li><strong>Protocol as code:</strong> Muse Wonder compiles a written procedure into a machine-checkable step graph. A new procedure is a new document, not a new codebase.</li>
+<li><strong>Human in charge:</strong> The system flags; a person decides. Every alert is reviewable with frame evidence. SecondNurse does not diagnose, treat, or make clinical decisions.</li>
+<li><strong>No invented results:</strong> There is no demo mode. Without a configured Meta API key, AI endpoints refuse with “configuration required” instead of fabricating output.</li>
+</ol>
+<h2>How it works at a glance</h2>
+<table><thead><tr><th>Stage</th><th>Model / component</th><th>What happens</th></tr></thead><tbody>
+<tr><td>Compile</td><td>Muse Wonder</td><td>Protocol text → StepGraph JSON: steps, objects, forbidden contacts, minimum times.</td></tr>
+<tr><td>See</td><td>SAM 3.1</td><td>Each camera frame is segmented per concept prompt; boxes and pixel masks return per object.</td></tr>
+<tr><td>Decide</td><td>Deterministic rule engine</td><td>Mask overlap, field containment, and step order are evaluated across consecutive frames.</td></tr>
+<tr><td>Act</td><td>SecondNurse UI + optional IoT alerts</td><td>Voice/screen alert stops the procedure; the event and its frames are logged for the care team.</td></tr>
+</tbody></table>
+<h2>Who it is for</h2>
+<ul>
+<li><strong>Patients and caregivers</strong> performing sterile procedures at home after discharge.</li>
+<li><strong>Training nurses and home-health programs</strong> who teach once and currently never observe again.</li>
+<li><strong>Builders</strong> who want a reference implementation of SAM 3.1 mask geometry driving real-time rules.</li>
+</ul>
+<p>Start with <a href="getting-started.html">Setup &amp; First Watch</a>, or jump to <a href="iot-devices.html">IoT Devices</a> for the physical bench: cameras, mounts, sensors, and alert hardware.</p>
+<h2>Scope in one paragraph</h2>
+<p>SecondNurse is an educational training system used with a physical training kit. It detects technique breaks — the same events a nurse trainer watches for. It cannot see bacteria, does not diagnose infection, and is not a medical device. Clinical use on real patients would require recorded-trial validation and regulatory review.</p>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>

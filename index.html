@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SecondNurse — the nurse who watches your hands</title>
-<meta name="description" content="SecondNurse watches home sterile technique with SAM 3.1 masks and Muse Wonder protocol compilation, and stops a contamination the second it happens. Training simulator — not a medical device.">
+<meta name="description" content="SecondNurse watches home sterile technique with SAM 3.1 masks and Muse Wonder protocol compilation, and stops a contamination the second it happens. Training system — not a medical device.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3Cpath d='M9 12l2.2 2.2L15.4 10' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,11 +33,11 @@
     <svg class="ic ic-brand"><use href="#i-shield"/></svg><span>Second<strong>Nurse</strong></span>
   </a>
   <nav class="nav-links" aria-label="Sections">
-    <a href="#simulator">Simulator</a><a href="#compiler">Protocol compiler</a><a href="#evidence">Evidence</a><a href="#safety">Safety</a>
+    <a href="#live">Live console</a><a href="#compiler">Protocol compiler</a><a href="#evidence">Evidence</a><a href="#safety">Safety</a><a href="/docs/">Docs</a>
   </nav>
   <div class="nav-actions">
     <span class="mode-pill" id="mode-pill">Checking API…</span>
-    <a class="btn btn-dark btn-sm" href="#simulator">Run the demo <svg class="ic"><use href="#i-arrow"/></svg></a>
+    <a class="btn btn-dark btn-sm" href="#live">Open live console <svg class="ic"><use href="#i-arrow"/></svg></a>
   </div>
 </header>
 
@@ -49,24 +49,21 @@
       <h1 class="headline" id="headline">The nurse who watches your hands when the nurse isn&rsquo;t there.</h1>
       <p class="lede reveal">A nurse trains a dialysis patient <em>once</em>. Then they perform a sterile procedure alone, at home, for years — and the commonest cause of infection is a half-second touch nobody saw. SecondNurse points a phone at the bench, tracks every hand and sterile part as a pixel mask, and <strong>stops the procedure the second sterile technique breaks</strong>.</p>
       <div class="hero-cta reveal">
-        <button class="btn btn-dark" data-run="touch"><svg class="ic"><use href="#i-play"/></svg> Watch it catch a breach</button>
-        <button class="btn btn-ghost" data-run="clean">Run a clean exchange</button>
+        <a class="btn btn-dark" href="#live"><svg class="ic"><use href="#i-play"/></svg> Start live watch</a>
+        <a class="btn btn-ghost" href="#compiler">Compile a protocol</a>
       </div>
       <dl class="hero-stats reveal">
         <div><dt><span data-count="548">0</span></dt><dd>contamination episodes in one 15-year study</dd></div>
         <div><dt><span data-count="5.6" data-decimals="1">0</span>%</dt><dd>of wet contaminations led to peritonitis</dd></div>
         <div><dt><span data-count="0">0</span></dt><dd>products watch a home patient&rsquo;s hands today</dd></div>
       </dl>
-      <p class="src reveal">Sources: PMC3524909, PMC6001843. Training simulator on a simulated kit — not a medical device.</p>
+      <p class="src reveal">Sources: PMC3524909, PMC6001843. Training system — not a medical device.</p>
     </div>
 
-    <div class="stage-card reveal" id="simulator" aria-label="SecondNurse live simulator">
+    <div class="stage-card reveal" id="live" aria-label="SecondNurse live camera console">
       <div class="stage-head">
-        <div class="stage-title"><svg class="ic"><use href="#i-activity"/></svg> Live bench — simulated exchange</div>
-        <div class="stage-tabs" role="tablist" aria-label="Stage view">
-          <button class="tab is-active" id="tab-bench" role="tab" aria-selected="true">Bench sim</button>
-          <button class="tab" id="tab-camera" role="tab" aria-selected="false">Your camera</button>
-        </div>
+        <div class="stage-title"><svg class="ic"><use href="#i-activity"/></svg> Live bench — your camera, SAM 3.1 masks</div>
+        <span class="stage-live-dot" id="stage-live-dot">API not configured</span>
       </div>
 
       <div class="alert-banner" id="alert-banner" role="alert" hidden>
@@ -76,35 +73,18 @@
       </div>
 
       <div class="stage-wrap">
-        <svg id="stage" viewBox="0 0 640 400" role="img" aria-label="Simulated dialysis bench with sterile field, connector, cap and hand">
-          <rect x="0" y="0" width="640" height="400" fill="#F6F1E7"/>
-          <g font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#655C4D">
-            <text x="70" y="78">STERILE FIELD</text><text x="467" y="165" text-anchor="middle">CONNECTOR</text><text x="120" y="352">SUPPLIES</text>
-          </g>
-          <rect id="svg-field" x="70" y="90" width="430" height="230" rx="14" fill="#E7F0EB" stroke="#0C6B57" stroke-width="1.5" stroke-dasharray="7 6"/>
-          <path d="M120 300 C 260 260, 380 285, 470 225" fill="none" stroke="#B9AE99" stroke-width="9" stroke-linecap="round"/>
-          <rect class="scanline" x="60" y="86" width="470" height="2.5" fill="#0C6B57" opacity="0.35"/>
-          <g id="svg-bag"><rect x="512" y="52" width="72" height="96" rx="10" fill="#DCE9F7" stroke="#2F6FED" stroke-width="1.5"/><text x="548" y="106" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#2F6FED">BAG</text></g>
-          <g id="svg-tip"><rect x="452" y="196" width="30" height="36" rx="6" fill="#D64541"/><rect x="466" y="178" width="10" height="22" fill="#8E2F2B"/><text x="467" y="250" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8E2F2B">STERILE TIP</text></g>
-          <g id="svg-cap"><rect x="205" y="255" width="36" height="25" rx="6" fill="#2F6FED"/><text x="223" y="298" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#2F6FED">CAP</text></g>
-          <g id="mask-tip" aria-hidden="true"><rect x="446" y="190" width="42" height="48" rx="11" fill="#D64541" opacity="0.16"/><rect x="446" y="190" width="42" height="48" rx="11" fill="none" stroke="#D64541" stroke-width="1.6" stroke-dasharray="5 4" class="mask-dash"/></g>
-          <g id="mask-cap" aria-hidden="true"><rect id="mask-cap-rect" x="199" y="249" width="48" height="37" rx="9" fill="#2F6FED" opacity="0.16"/><rect id="mask-cap-line" x="199" y="249" width="48" height="37" rx="9" fill="none" stroke="#2F6FED" stroke-width="1.6" stroke-dasharray="5 4" class="mask-dash"/></g>
-          <g id="mask-hand" transform="translate(285,120)" aria-hidden="true"><ellipse cx="34" cy="24" rx="40" ry="36" fill="#D97706" opacity="0.15"/><ellipse cx="34" cy="24" rx="40" ry="36" fill="none" stroke="#D97706" stroke-width="1.6" stroke-dasharray="5 4" class="mask-dash"/></g>
-          <g id="svg-hand" transform="translate(285,120)">
-            <circle cx="34" cy="26" r="30" fill="#F2C29B" stroke="#C98F5F" stroke-width="1.5"/>
-            <rect x="16" y="-4" width="9" height="26" rx="4.5" fill="#F2C29B" stroke="#C98F5F"/>
-            <rect x="29" y="-8" width="9" height="30" rx="4.5" fill="#F2C29B" stroke="#C98F5F"/>
-            <rect x="42" y="-4" width="9" height="26" rx="4.5" fill="#F2C29B" stroke="#C98F5F"/>
-            <text x="34" y="72" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#8A6B4A">HAND</text>
-          </g>
-          <circle id="pulse" cx="467" cy="214" r="10" fill="none" stroke="#D64541" stroke-width="2" opacity="0"/>
-        </svg>
-        <div class="video-wrap"><video id="camera" autoplay playsinline muted hidden></video><div id="cam-overlay" aria-hidden="true"></div></div>
-        <div class="camera-note" id="camera-note" hidden>
-          <span id="camera-status">Camera is local-only. Frames go only to your configured Meta API in live mode.</span>
-          <button class="btn btn-dark btn-sm" id="btn-analyze">Analyze one frame</button>
-          <button class="btn btn-danger btn-sm" id="btn-watch">Start live watch</button>
-          <span id="segment-result" class="mono" role="status"></span>
+        <div class="video-wrap">
+          <video id="camera" autoplay playsinline muted></video>
+          <div id="cam-overlay" aria-hidden="true"></div>
+          <div class="cam-empty" id="cam-empty">
+            <svg class="ic"><use href="#i-camera"/></svg>
+            <p>Point this camera at the bench from above.<br>The kit in frame: hands, red connector, blue cap, sterile mat.</p>
+            <button class="btn btn-dark" id="btn-camera">Enable camera</button>
+          </div>
+        </div>
+        <div class="camera-note" id="camera-note">
+          <span id="camera-status">Frames are analyzed by SAM 3.1 on your configured Meta API. Nothing is stored.</span>
+          <span id="segment-result" class="mono" role="status">Not analyzed yet.</span>
         </div>
       </div>
 
@@ -112,45 +92,42 @@
         <span><i class="dot dot-hand"></i>SAM mask · hand</span>
         <span><i class="dot dot-tip"></i>SAM mask · sterile tip</span>
         <span><i class="dot dot-cap"></i>SAM mask · cap</span>
-        <span><i class="dot dot-field"></i>Sterile field boundary</span>
-        <span class="mask-note">Breach = mask overlap, sustained ≥ 0.3s</span>
+        <span><i class="dot dot-field"></i>Sterile field</span>
+        <span class="mask-note">Breach = mask overlap on 2 consecutive frames</span>
       </div>
 
-      <div class="sim-controls" aria-label="Scenario controls">
-        <button class="btn btn-dark" data-run="clean"><svg class="ic"><use href="#i-play"/></svg> Clean exchange</button>
-        <button class="btn btn-danger" data-run="touch"><svg class="ic"><use href="#i-alert"/></svg> Touch breach</button>
-        <button class="btn btn-ghost" data-run="field">Cap outside field</button>
-        <button class="btn btn-ghost" data-run="order">Wrong order</button>
-        <button class="btn btn-ghost" id="btn-pause">Pause</button>
-        <button class="btn btn-ghost" id="btn-reset">Reset</button>
+      <div class="sim-controls" aria-label="Live controls">
+        <button class="btn btn-danger" id="btn-watch"><svg class="ic"><use href="#i-play"/></svg> Start live watch</button>
+        <button class="btn btn-dark" id="btn-analyze">Analyze one frame</button>
+        <button class="btn btn-ghost" id="btn-reset">Reset session</button>
         <label class="voice-toggle"><input type="checkbox" id="voice-toggle"> Voice alert</label>
       </div>
 
       <div class="sim-grid">
         <div>
-          <h3 class="panel-title">Exchange steps</h3>
+          <h3 class="panel-title">Protocol steps</h3>
           <ol class="steps" id="steps"></ol>
         </div>
         <div>
           <h3 class="panel-title">Rule engine — live geometry</h3>
           <dl class="readout mono">
-            <div><dt>hand ∩ sterile tip</dt><dd id="ro-overlap">0 px²</dd></div>
-            <div><dt>sustained</dt><dd id="ro-dwell">0.0 s</dd></div>
-            <div><dt>cap in sterile field</dt><dd id="ro-field">yes</dd></div>
-            <div><dt>active rule</dt><dd id="ro-rule">TOUCH · FIELD · ORDER</dd></div>
+            <div><dt>hand ∩ sterile tip</dt><dd id="ro-overlap">—</dd></div>
+            <div><dt>consecutive overlaps</dt><dd id="ro-dwell">0</dd></div>
+            <div><dt>cap in sterile field</dt><dd id="ro-field">—</dd></div>
+            <div><dt>last frame latency</dt><dd id="ro-latency">—</dd></div>
           </dl>
           <div class="score-row">
             <div class="score-ring" id="score-ring"><span id="score-num">100</span></div>
-            <p>Compliance score for this session. Every confirmed breach is logged with its frames for the care team.</p>
+            <p>Compliance score for this session. Every confirmed breach is logged with its frame evidence.</p>
           </div>
         </div>
         <div>
           <h3 class="panel-title">Event log</h3>
-          <ul class="log" id="log"><li class="log-empty">No events yet. Run a scenario.</li></ul>
+          <ul class="log" id="log"><li class="log-empty">No events yet. Start live watch.</li></ul>
         </div>
       </div>
     </div>
-  </section>
+  
 
   <div class="marquee" aria-hidden="true"><div class="marquee-track">
     <span>Touch contamination is invisible</span><b>·</b><span>Half a second is enough</span><b>·</b><span>Nobody watches the fourth exchange of the day</span><b>·</b><span>A mask measures what an opinion guesses</span><b>·</b>
@@ -189,7 +166,7 @@
   <section class="section reveal" id="compiler">
     <p class="eyebrow"><svg class="ic"><use href="#i-doc"/></svg> Protocol compiler</p>
     <h2 class="section-title">Drop in a procedure. Get executable checks.</h2>
-    <p class="section-lede">This is the anti-hardcoding proof. Edit the protocol below, compile it, and the step checklist, objects and forbidden contacts are regenerated — the same graph the simulator executes. With a Meta API key configured, Muse Wonder produces the graph; offline, a deterministic parser produces the identical schema.</p>
+    <p class="section-lede">This is the anti-hardcoding proof. Edit the protocol below, compile it, and the step checklist, objects and forbidden contacts are regenerated — the same graph the live rule engine executes. Muse Wonder produces the graph from your protocol text — a configured Meta API key is required.</p>
     <div class="compiler-grid">
       <div class="compiler-input">
         <label for="protocol-text">Protocol text</label>
@@ -213,20 +190,14 @@
     </div>
   </section>
 
-  <!-- ================= EVIDENCE ================= -->
+  <!-- ================= LIVE RESULTS ================= -->
   <section class="section reveal" id="evidence">
-    <p class="eyebrow"><svg class="ic"><use href="#i-shield"/></svg> Evidence</p>
-    <h2 class="section-title">Measured against the obvious alternative.</h2>
-    <p class="section-lede">The obvious way to build this is asking a vision-language model &ldquo;was there a breach?&rdquo; So we benchmark exactly that, against mask geometry, on scripted trials. The harness below runs 24 deterministic simulated trials in your browser (4 scenarios × 6), labelled for what it is — a bench harness, not a clinical study.</p>
-    <div class="eval-bar">
-      <button class="btn btn-dark" id="btn-eval"><svg class="ic"><use href="#i-play"/></svg> Run 24-trial bench eval</button>
-      <span class="mono" id="eval-status" role="status">Not run yet.</span>
+    <p class="eyebrow"><svg class="ic"><use href="#i-shield"/></svg> Live results</p>
+    <h2 class="section-title">What the last analyzed frame actually saw.</h2>
+    <p class="section-lede">Every number below comes from a real SAM 3.1 response for a frame from your camera — objects found, confidence, true mask overlap, latency. No key configured, no numbers: the product refuses to invent results.</p>
+    <div class="live-results" id="live-results">
+      <p class="muted">No frame analyzed yet. Enable the camera above and analyze a frame.</p>
     </div>
-    <div class="eval-grid">
-      <div class="eval-card"><h3>SecondNurse — SAM masks + rules</h3><div class="metric"><span>Precision</span><div class="bar"><i id="m-p"></i></div><b id="m-p-v">—</b></div><div class="metric"><span>Recall</span><div class="bar"><i id="m-r"></i></div><b id="m-r-v">—</b></div><div class="metric"><span>False alerts / clean run</span><div class="bar"><i id="m-f"></i></div><b id="m-f-v">—</b></div></div>
-      <div class="eval-card eval-base"><h3>Baseline — VLM asked directly</h3><div class="metric"><span>Precision</span><div class="bar"><i id="b-p"></i></div><b id="b-p-v">—</b></div><div class="metric"><span>Recall</span><div class="bar"><i id="b-r"></i></div><b id="b-r-v">—</b></div><div class="metric"><span>False alerts / clean run</span><div class="bar"><i id="b-f"></i></div><b id="b-f-v">—</b></div></div>
-    </div>
-    <p class="src">Simulated baseline models a per-clip VLM judgement with seeded noise. Real-camera numbers require the live SAM 3.1 path and a recorded trial set — that is the post-hackathon validation step, stated plainly.</p>
   </section>
 
   <!-- ================= SAFETY ================= -->
@@ -234,9 +205,9 @@
     <p class="eyebrow"><svg class="ic"><use href="#i-shield"/></svg> Safety &amp; scope</p>
     <h2 class="section-title">What this is, and what it is not.</h2>
     <div class="rows">
-      <article class="row"><span class="row-num"><svg class="ic"><use href="#i-check"/></svg></span><div><h3>It is a training simulator</h3><p>Simulated kit, simulated procedure, technique feedback for education. It detects the technique break a nurse trainer watches for — it cannot see bacteria, and it never claims to.</p></div></article>
+      <article class="row"><span class="row-num"><svg class="ic"><use href="#i-check"/></svg></span><div><h3>It is a training system</h3><p>A physical training kit and a real procedure, watched live, with technique feedback for education. It detects the technique break a nurse trainer watches for — it cannot see bacteria, and it never claims to.</p></div></article>
       <article class="row"><span class="row-num"><svg class="ic"><use href="#i-check"/></svg></span><div><h3>A human stays in charge</h3><p>The system flags; a person decides. Every alert is reviewable with its frames, and session reports go to the care team. No diagnosis, no treatment decision, no autonomous clinical action.</p></div></article>
-      <article class="row"><span class="row-num"><svg class="ic"><use href="#i-check"/></svg></span><div><h3>Private by construction</h3><p>Demo mode processes geometry locally in the browser. No patient data is collected, stored, or sent anywhere. Live mode sends frames only to the Meta Model API you configure.</p></div></article>
+      <article class="row"><span class="row-num"><svg class="ic"><use href="#i-check"/></svg></span><div><h3>Private by construction</h3><p>Frames go only to the Meta Model API you configure, for segmentation. No patient data is collected or stored by SecondNurse.</p></div></article>
     </div>
   </section>
 
@@ -249,8 +220,8 @@
 <footer class="footer">
   <div class="footer-word" aria-hidden="true">SecondNurse</div>
   <div class="brand"><svg class="ic ic-brand"><use href="#i-shield"/></svg><span>Second<strong>Nurse</strong></span></div>
-  <p>Powered by Muse Wonder and SAM 3.1. Educational training simulator — not a medical device. Does not diagnose, treat, or make clinical decisions.</p>
-  <p class="mono">SecondNurse · Training simulator</p>
+  <p>Powered by Muse Wonder and SAM 3.1. Educational training system — not a medical device. Does not diagnose, treat, or make clinical decisions.</p>
+  <p class="mono">SecondNurse · Live training system</p>
 </footer>
 
 <script src="/app.js"></script>

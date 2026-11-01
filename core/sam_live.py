@@ -1,7 +1,7 @@
 """Live SAM 3.1 integration: Responses API call, wire-grammar parser, mask math.
 
 Without MODEL_API_KEY (or SECONDNURSE_MODE != live) every function returns
-labelled demo geometry, so the product loop runs offline. With a key, frames
+With a key, frames
 go to SAM 3.1 and returned boxes/masks are parsed per Meta's documented
 grammar: <Nf>id<|box;x1=..;y1=..;x2=..;y2=..;w=..;h=..|><|mask;..;data=H,W,enc+payload|>
 """
@@ -140,25 +140,12 @@ def _canonical(prompt):
     return "object"
 
 
-def _demo_boxes(prompt):
-    from core.meta_client import segment
-    out = segment(prompt)
-    boxes = []
-    for b in out["boxes"]:
-        boxes.append({"x": b["x"], "y": b["y"], "w": b["w"], "h": b["h"],
-                      "label": b["label"], "mask": None, "confidence": None})
-    return {"prompt": prompt, "canonical": _canonical(prompt), "boxes": boxes,
-            "frame_w": 640, "frame_h": 400}
-
-
 def segment_live(image_data_url, prompts):
-    """Segment one captured frame for several prompts. Live SAM or demo geometry."""
+    """Segment one captured frame for several prompts via live SAM 3.1."""
     prompts = [str(p)[:80] for p in (prompts or [])][:5] or ["red connector"]
     started = time.time()
     if not live_enabled():
-        results = [_demo_boxes(p) for p in prompts]
-        return {"live": False, "mock": True, "model": "demo-geometry",
-                "results": results, "latency_ms": int((time.time() - started) * 1000)}
+        raise RuntimeError("Meta API not configured: set MODEL_API_KEY and SECONDNURSE_MODE=live.")
     if not (isinstance(image_data_url, str) and image_data_url.startswith("data:image/")):
         raise ValueError("image must be a data:image URL")
     if len(image_data_url) > MAX_IMAGE_BYTES * 1.4:
@@ -189,5 +176,5 @@ def segment_live(image_data_url, prompts):
     for r in results:
         for b in r["boxes"]:
             b.pop("_record", None)
-    return {"live": True, "mock": False, "model": MODEL, "results": results,
+    return {"live": True, "model": MODEL, "results": results,
             "touch": touch, "latency_ms": int((time.time() - started) * 1000)}

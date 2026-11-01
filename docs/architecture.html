@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Architecture | SecondNurse Docs</title>
+<meta name="description" content="SecondNurse documentation: Architecture. Live sterile-technique training with Muse Wonder and SAM 3.1.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="docs.css"></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">✚</span> SecondNurse</a>
+  <a class="top-link" href="../" target="_blank" rel="noopener">Open App ↗</a>
+  <a class="top-link is-current" href="index.html">Documentation</a>
+  <div class="top-actions"><label class="search"><span>⌕</span><input id="nav-search" type="search" placeholder="Search docs" aria-label="Search docs"></label>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">◐</button></div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><nav><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Getting Started<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="index.html">Introduction</a><a class="nav-item" href="getting-started.html">Setup & First Watch</a><a class="nav-item" href="safety.html">Safety & Scope</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Product<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item" href="live-watch.html">Live Watch</a><a class="nav-item" href="protocol-compiler.html">Protocol Compiler</a><a class="nav-item" href="iot-devices.html">IoT Devices</a></div></div><div class="nav-group"><button class="nav-group-head" aria-expanded="true">Developers<span class="chev">⌄</span></button><div class="nav-items"><a class="nav-item is-active" href="architecture.html">Architecture</a><a class="nav-item" href="api-reference.html">API Reference</a><a class="nav-item" href="troubleshooting.html">FAQ & Troubleshooting</a></div></div></nav>
+    <div class="side-note"><strong>Live only.</strong><br>SecondNurse has no demo mode. Without a Meta API key, AI endpoints return “configuration required”.</div>
+  </aside>
+  <main class="content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">⌂</a><span>›</span><span>Developers</span><span>›</span><span class="crumb-pill">Architecture</span></nav>
+
+<h1>Architecture</h1>
+<p>SecondNurse is deliberately small: a static front end, a thin Flask layer, and pure-Python core modules. Every AI call sits behind an env-gated adapter, and every fallback that could invent a result has been removed.</p>
+<h2>System map</h2>
+<pre><code>Camera (browser)
+  │  JPEG frame, ≤640px, every ~3s (watch) or on demand
+  ▼
+POST /api/segment-live ──► core/sam_live.py
+  │  one SAM 3.1 Responses request per prompt
+  │  parse wire grammar → decode masks (meta_sam_parser)
+  │  hand∩tip mask overlap (px)
+  ▼
+Rule evaluation (browser + core/rules.py)
+  │  TOUCH · FIELD · ORDER, consecutive-frame confirmation
+  ▼
+Alert + session log + Live Results        Protocol text
+                                            │  POST /api/compile
+                                            ▼
+                                     core/protocol.py → Muse Wonder
+                                            │  StepGraph JSON
+                                            └─► checklist + ORDER rules</code></pre>
+<h2>Modules</h2>
+<table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody>
+<tr><td><code>app.py</code></td><td>Flask routes, validation, rate limits, security headers, Vercel dispatch.</td></tr>
+<tr><td><code>core/protocol.py</code></td><td>Muse Wonder compilation to StepGraph; refuses when unconfigured.</td></tr>
+<tr><td><code>core/sam_live.py</code></td><td>SAM 3.1 Responses calls, wire-grammar parser, mask decoding, mask-overlap math.</td></tr>
+<tr><td><code>core/rules.py</code></td><td>Pure trace evaluator: sustained overlap, field containment, step order, compliance score.</td></tr>
+<tr><td><code>core/meta_client.py</code></td><td>Configuration gate for the Meta API (live or refuse).</td></tr>
+<tr><td><code>api/index.py</code></td><td>Vercel serverless entrypoint; restores original API paths.</td></tr>
+<tr><td><code>index.html / styles.css / app.js</code></td><td>Product surface: live console, compiler UI, live results.</td></tr>
+<tr><td><code>docs/</code></td><td>This documentation (static, GitBook-style shell).</td></tr>
+</tbody></table>
+<h2>The SAM wire format, as parsed</h2>
+<p>SAM 3.1 answers in a special-token grammar on the Responses <code>output_text</code> lane — one line per frame:</p>
+<pre><code>&lt;0f&gt;0&lt;|box;x1=353;y1=382;x2=453;y2=427;w=537;h=561|&gt;&lt;|mask;x=0;y=0;data=46,101,~…|&gt;</code></pre>
+<ul>
+<li><code>&lt;Nf&gt;</code> opens frame N; indices can skip and need not be ascending.</li>
+<li>Each record is an object id, one box token, one mask token. Box coordinates are source pixels; <code>w/h</code> repeat the frame size.</li>
+<li>Mask payloads are base85, <code>~</code> lossless or <code>!</code> one-bit. SecondNurse requests <code>one_bit</code> for payload size, then decodes with the official <code>meta_sam_parser</code>.</li>
+<li>Mask rasters are box-cropped; overlap is computed by placing each raster at its box origin in frame coordinates — true pixel intersection, with box overlap only as a fallback if a payload fails to decode.</li>
+</ul>
+<h2>Why per-prompt requests</h2>
+<p>SAM accepts exactly one concept per request; list syntax returns nothing. Four prompts therefore cost four requests per frame. This is the dominant latency and cost term, and the reason watch mode samples at ~3s instead of pretending to be a video-rate system.</p>
+<h2>Security posture</h2>
+<ul>
+<li>API keys exist only as server-side environment variables.</li>
+<li>Request bodies are capped (8&nbsp;MB — one camera frame), JSON shapes validated, compile and live-segment routes rate-limited per client.</li>
+<li>Responses carry CSP, <code>nosniff</code>, frame-deny, referrer, and permissions headers.</li>
+<li>All user-supplied text renders via <code>textContent</code>; there is no HTML injection path from protocol text or SAM labels.</li>
+<li>Frames are forwarded to the Meta API and not stored; no analytics, no third-party calls from the browser except fonts.</li>
+</ul>
+<h2>Deployment</h2>
+<p>One codebase, two hosts: Flask serves everything locally; on Vercel, static files serve directly and <code>api/index.py</code> runs the same Flask app as a serverless function, with a rewrite that passes the original route through. Environment variables are identical in both.</p>
+<h2>Design system</h2>
+<p>The product surface follows <code>DESIGN.md</code> in the repo root — a token spec (warm parchment, Fraunces 500, clinical teal, WCAG-measured text colours, 8px grid, 48px targets) that lints clean with the <code>@google/design.md</code> CLI. These docs use a separate, quieter GitBook-style system: monochrome, flat, content-first.</p>
+
+    <footer class="doc-footer"><span>SecondNurse Docs</span><span>Training system — not a medical device.</span></footer>
+  </main>
+  <aside class="toc"><p class="toc-title">On this page</p><nav id="toc"></nav></aside>
+</div>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open navigation">☰ Docs</button>
+<script src="docs.js"></script>
+</body></html>
