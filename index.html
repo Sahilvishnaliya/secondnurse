@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3l7 2.6v5.2c0 4.6-3 7.7-7 9.2-4-1.5-7-4.6-7-9.2V5.6L12 3z' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3Cpath d='M9 12l2.2 2.2L15.4 10' fill='none' stroke='%230C6B57' stroke-width='1.8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -45,6 +45,7 @@
   <!-- ================= HERO + LIVE SIMULATOR ================= -->
   <section class="hero">
     <div class="hero-copy">
+      <div class="issue-line mono" aria-hidden="true"><span>Bench Record</span><span>Vol. 01 — Home Care Edition</span><span>Est. 2026</span></div>
       <p class="eyebrow reveal"><svg class="ic"><use href="#i-eye"/></svg> Home sterile-technique training · Live mask geometry</p>
       <h1 class="headline" id="headline">The nurse who watches your hands when the nurse isn&rsquo;t there.</h1>
       <p class="lede reveal">A nurse trains a dialysis patient <em>once</em>. Then they perform a sterile procedure alone, at home, for years — and the commonest cause of infection is a half-second touch nobody saw. SecondNurse points a phone at the bench, tracks every hand and sterile part as a pixel mask, and <strong>stops the procedure the second sterile technique breaks</strong>.</p>
@@ -61,6 +62,7 @@
     </div>
 
     <div class="stage-card reveal" id="live" aria-label="SecondNurse live camera console">
+      
       <div class="stage-head">
         <div class="stage-title"><svg class="ic"><use href="#i-activity"/></svg> Live bench — your camera, SAM 3.1 masks</div>
         <span class="stage-live-dot" id="stage-live-dot">Real mode · SAM 3.1</span>
@@ -103,6 +105,8 @@
         <label class="voice-toggle"><input type="checkbox" id="voice-toggle"> Voice alert</label>
       </div>
 
+      <p class="plate-caption mono">Plate № 01 · Overhead bench — live camera, SAM 3.1 mask geometry, deterministic rules</p>
+
       <div class="sim-grid">
         <div>
           <h3 class="panel-title">Protocol steps</h3>
@@ -141,7 +145,7 @@
   </section>
 
   <!-- ================= HOW IT WORKS ================= -->
-  <section class="section reveal">
+  <section class="section section-dark reveal">
     <p class="eyebrow"><svg class="ic"><use href="#i-activity"/></svg> How it works</p>
     <h2 class="section-title">Contamination, defined as geometry — not an AI&rsquo;s opinion.</h2>
     <div class="rows">
@@ -150,6 +154,8 @@
       <article class="row"><span class="row-num">03</span><div><h3>A deterministic engine calls the breach</h3><p>Hand mask overlapping the sterile tip for over 0.3s is a touch contamination. Cap outside the field is a field breach. Skipped steps are order breaches. Thresholds you can defend, events you can replay.</p></div><code class="row-code">overlap ≥ 40px² · ≥ 0.3s</code></article>
     </div>
   </section>
+
+  <div class="ornament" aria-hidden="true"><span class="orn-line"></span><span class="orn-gem">◆</span><span class="orn-label mono">§ 03 · Anatomy</span><span class="orn-line"></span></div>
 
   <section class="section reveal">
     <p class="eyebrow"><svg class="ic"><use href="#i-camera"/></svg> Anatomy of a catch</p>
@@ -161,6 +167,8 @@
       <article class="frame-card is-alert"><div class="frame-head mono">t + 0.3s</div><div class="frame-stage breach"><i class="f-hand"></i><i class="f-tip"></i></div><h3>The catch</h3><p>Sustained overlap confirmed. Procedure frozen, correction spoken, frames logged for the care team.</p></article>
     </div>
   </section>
+
+  <div class="ornament" aria-hidden="true"><span class="orn-line"></span><span class="orn-gem">◆</span><span class="orn-label mono">§ 04 · Compiler</span><span class="orn-line"></span></div>
 
   <!-- ================= COMPILER ================= -->
   <section class="section reveal" id="compiler">
@@ -212,6 +220,15 @@
   </section>
 
   <section class="closing reveal">
+    <div class="stamp" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <defs><path id="stamp-circle" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs>
+          <circle cx="60" cy="60" r="58" fill="#FAF7F1" stroke="#17130C" stroke-width="1.5"/>
+          <circle cx="60" cy="60" r="34" fill="none" stroke="#0C6B57" stroke-width="1"/>
+          <text font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="2.5" fill="#17130C"><textPath href="#stamp-circle">SECOND NURSE • WATCHING HANDS • STERILE TECHNIQUE • </textPath></text>
+          <text x="60" y="66" text-anchor="middle" font-size="17" fill="#0C6B57">✚</text>
+        </svg>
+      </div>
     <h2>Millions perform sterile procedures alone tonight.<br><span>Someone should be watching their hands.</span></h2>
     <a class="btn btn-dark btn-lg" href="#live">Open the live console <svg class="ic"><use href="#i-arrow"/></svg></a>
   </section>
