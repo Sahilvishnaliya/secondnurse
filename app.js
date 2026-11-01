@@ -149,6 +149,21 @@ $("#btn-fullscreen").addEventListener("click", () => {
   else if (wrap.requestFullscreen) wrap.requestFullscreen();
 });
 
+function stopCamera() {
+  stopWatch();
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  const video = $("#camera");
+  video.srcObject = null;
+  video.classList.remove("mirrored");
+  $("#cam-overlay").textContent = "";
+  $("#cam-tools").hidden = true;
+  $("#cam-empty").hidden = false;
+  $("#camera-status").textContent = "Camera is off. Enable it when the bench is framed.";
+  $("#segment-result").textContent = "Not analyzed yet.";
+  logEvent("camera", "Camera turned off.");
+}
+$("#btn-camera-off").addEventListener("click", stopCamera);
+
 function captureFrame() {
   const video = $("#camera");
   if (!video.videoWidth) return null;

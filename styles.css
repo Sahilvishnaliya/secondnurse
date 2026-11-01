@@ -290,7 +290,7 @@ body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opa
 #camera.mirrored{transform:scaleX(-1)}
 .video-wrap:fullscreen{background:#000}
 .video-wrap:fullscreen video{height:100%;max-height:none}
-.cam-tools{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:10px;z-index:4;line-height:1.2}
+.cam-tools{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:10px;z-index:4;line-height:1.2;flex-wrap:wrap}
 .cam-switch{display:flex;background:rgba(20,17,11,.82);border:1px solid rgba(251,248,241,.25);border-radius:99px;padding:3px}
 .cam-opt{border:0;background:transparent;color:#CFC6B4;padding:8px 13px;border-radius:99px;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;min-height:38px}
 .cam-opt.is-active{background:#FBF8F1;color:var(--ink)}
